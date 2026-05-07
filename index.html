@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Throttlr — per-application network throttler for Windows. Coming soon.">
+  <meta name="theme-color" content="#ffb800">
+  <meta property="og:title" content="Throttlr — Coming Soon.">
+  <meta property="og:description" content="Per-application network throttler for Windows. Drop, lag, throttle, freeze, block — for any single Windows app.">
+  <meta property="og:type" content="website">
+
+  <title>Throttlr — Coming Soon.</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="bg-stripes" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-vignette" aria-hidden="true"></div>
+<canvas class="bg-noise" id="noise" aria-hidden="true"></canvas>
+
+<!-- Cursor spotlight (driven by JS via CSS vars) -->
+<div class="cursor-light" aria-hidden="true"></div>
+
+<!-- Top status marquee -->
+<div class="status-marquee" aria-hidden="true">
+  <div class="status-track">
+    <span class="sm-light"></span>
+    <span class="sm-text">TRANSMISSION ACTIVE</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">CHANNEL 04 // BILLY'S MATRIX</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">SIGNAL LOCKED</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">STAND BY</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-light"></span>
+    <span class="sm-text">TRANSMISSION ACTIVE</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">CHANNEL 04 // BILLY'S MATRIX</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">SIGNAL LOCKED</span>
+    <span class="sm-sep">//</span>
+    <span class="sm-text">STAND BY</span>
+    <span class="sm-sep">//</span>
+  </div>
+</div>
+
+<div class="hazard-strip"></div>
+
+<!-- ===================== HERO ===================== -->
+<main class="hero">
+  <span class="corner corner-tl"></span>
+  <span class="corner corner-tr"></span>
+  <span class="corner corner-bl"></span>
+  <span class="corner corner-br"></span>
+
+  <!-- 3D perspective grid floor -->
+  <div class="hero-floor" aria-hidden="true">
+    <div class="floor-grid"></div>
+    <div class="floor-fade"></div>
+  </div>
+
+  <!-- Top-corner mini telemetry boxes -->
+  <aside class="telem telem-tl" aria-hidden="true">
+    <div class="telem-head">// CH 04 / TX</div>
+    <div class="telem-row">
+      <span class="telem-key">SIGNAL</span>
+      <div class="telem-bars">
+        <span style="--b: 60%"></span>
+        <span style="--b: 80%"></span>
+        <span style="--b: 95%"></span>
+        <span style="--b: 70%"></span>
+        <span style="--b: 90%"></span>
+      </div>
+    </div>
+    <div class="telem-row">
+      <span class="telem-key">UPLINK</span>
+      <span class="telem-val telem-ok">LOCKED</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-key">FREQ</span>
+      <span class="telem-val">2.412 GHZ</span>
+    </div>
+  </aside>
+
+  <aside class="telem telem-tr" aria-hidden="true">
+    <div class="telem-head">// SYS / DIAG</div>
+    <div class="telem-row">
+      <span class="telem-key">CORE</span>
+      <span class="telem-val telem-ok">NOMINAL</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-key">BUILD</span>
+      <span class="telem-val">2.1.0-β</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-key">TIME</span>
+      <span class="telem-val" id="telem-time">--:--:--</span>
+    </div>
+  </aside>
+
+  <div class="hero-stage">
+
+    <!-- Radar sweep + bolt + rings -->
+    <div class="bolt-stage" aria-hidden="true">
+      <div class="radar-sweep"></div>
+      <span class="ring ring-1"></span>
+      <span class="ring ring-2"></span>
+      <span class="ring ring-3"></span>
+      <span class="ring ring-4"></span>
+      <span class="ring-static"></span>
+      <span class="ring-static ring-static-2"></span>
+      <span class="crosshair crosshair-h"></span>
+      <span class="crosshair crosshair-v"></span>
+      <img class="bolt-svg" id="boltSvg" src="throttlr-logo.png" alt="" aria-hidden="true">
+    </div>
+
+    <div class="eyebrow" data-reveal>
+      <span class="eyebrow-tick"></span>
+      <span class="eyebrow-text">// TRANSMISSION INCOMING</span>
+      <span class="eyebrow-tick"></span>
+    </div>
+
+    <h1 class="title" data-reveal style="--d: 0.1s">
+      <span class="title-line title-coming" data-text="COMING">COMING</span>
+      <span class="title-line title-soon" data-text="SOON.">SOON.</span>
+    </h1>
+
+    <p class="brand-line" data-reveal style="--d: 0.2s">
+      <span class="brand-bolt-mini">⚡</span>
+      <strong>THROTTLR</strong>
+      <span class="brand-divider"></span>
+      <span class="brand-by">BY BILLY'S MATRIX</span>
+    </p>
+
+    <p class="tagline" data-reveal style="--d: 0.3s">
+      The per-application network throttler for Windows.
+      <br>
+      Drop. Lag. Throttle. Freeze. Block. For any single Windows app.
+    </p>
+
+    <div class="scroll-cue" data-reveal style="--d: 0.55s">
+      <span class="cue-line"></span>
+      <span class="cue-text">// SCROLL FOR INTEL</span>
+      <span class="cue-arrow">↓</span>
+    </div>
+
+  </div>
+</main>
+
+<!-- ===================== INFO SECTIONS ===================== -->
+
+<div class="hazard-strip"></div>
+
+<!-- 01 — What -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 01</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>What it is.</h2>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <p>
+        Throttlr lives between your app and the network. Pick any running
+        Windows process — a game, a chat client, a download manager, your
+        browser, whatever — and Throttlr intercepts every packet that
+        process tries to send or receive.
+      </p>
+      <p>
+        Once intercepted, you decide what happens: <strong>drop</strong> them,
+        <strong>delay</strong> them, <strong>cap their bandwidth</strong>,
+        hold them in a queue and release them in a burst, or
+        <strong>block them entirely</strong>. All in real time. All
+        without touching any other app on your machine.
+      </p>
+      <p>
+        Built on the WinDivert kernel driver. Open-source. Free. Windows
+        10 and 11. No accounts, no telemetry, no servers — everything
+        runs on your own machine.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 02 — Six Functions w/ visualizations -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 02</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>Six functions.</h2>
+      <p class="info-sub">Mix freely. Toggle independently. Apply inbound, outbound, or both.</p>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <div class="fn-list">
+
+        <div class="fn-item">
+          <div class="fn-num">01</div>
+          <div class="fn-detail">
+            <h3>Lag</h3>
+            <p>Add controllable latency to any app's traffic. Set a target
+            millisecond delay, optionally with jitter for realism. Find
+            out what 200ms ping actually feels like in your favorite game.</p>
+          </div>
+          <div class="fn-vis fn-vis-lag" aria-hidden="true">
+            <span class="lag-track"></span>
+            <span class="lag-dot"></span>
+            <span class="lag-dot"></span>
+            <span class="lag-dot"></span>
+            <span class="fn-vis-label">200 ms</span>
+          </div>
+        </div>
+
+        <div class="fn-item">
+          <div class="fn-num">02</div>
+          <div class="fn-detail">
+            <h3>Drop</h3>
+            <p>Discard packets at a configurable rate, from a 1% drizzle
+            to a total wipeout. Optional DNS-only mode for surgical
+            disruption — drop the domain lookups, let everything else
+            through.</p>
+          </div>
+          <div class="fn-vis fn-vis-drop" aria-hidden="true">
+            <div class="drop-grid">
+              <span></span><span class="lost"></span><span></span><span></span>
+              <span class="lost"></span><span></span><span></span><span class="lost"></span>
+              <span></span><span></span><span class="lost"></span><span></span>
+            </div>
+            <span class="fn-vis-label">25%</span>
+          </div>
+        </div>
+
+        <div class="fn-item">
+          <div class="fn-num">03</div>
+          <div class="fn-detail">
+            <h3>Throttle</h3>
+            <p>Hard bandwidth ceiling in KB/s, applied via a token bucket
+            algorithm. Smooth ratelimit, no spiky surprises. 50 KB/s for
+            a 56k modem. 200 KB/s for slow 3G. 5 MB/s for cable.</p>
+          </div>
+          <div class="fn-vis fn-vis-throttle" aria-hidden="true">
+            <div class="throttle-bars">
+              <span style="--h: 50%"></span>
+              <span style="--h: 60%"></span>
+              <span style="--h: 55%"></span>
+              <span style="--h: 60%"></span>
+              <span style="--h: 50%"></span>
+              <span style="--h: 55%"></span>
+            </div>
+            <span class="throttle-cap"></span>
+            <span class="fn-vis-label">100 KB/s</span>
+          </div>
+        </div>
+
+        <div class="fn-item">
+          <div class="fn-num">04</div>
+          <div class="fn-detail">
+            <h3>Freeze</h3>
+            <p>Hold every packet in a kernel-level queue while frozen.
+            When you toggle off, all 5,000 held packets release in a
+            single rapid burst. Up to one million packets in queue.</p>
+          </div>
+          <div class="fn-vis fn-vis-freeze" aria-hidden="true">
+            <svg class="freeze-flake" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <line x1="12" y1="2" x2="12" y2="22"/>
+              <path d="m20 16-4-4 4-4"/>
+              <path d="m4 8 4 4-4 4"/>
+              <path d="m16 4-4 4-4-4"/>
+              <path d="m8 20 4-4 4 4"/>
+            </svg>
+            <span class="fn-vis-label freeze-label">5,234 held</span>
+          </div>
+        </div>
+
+        <div class="fn-item">
+          <div class="fn-num">05</div>
+          <div class="fn-detail">
+            <h3>Block</h3>
+            <p>Total stop. Inbound, outbound, or both. The kill switch
+            when you need silence. Useful for testing how an app handles
+            sudden disconnects.</p>
+          </div>
+          <div class="fn-vis fn-vis-block" aria-hidden="true">
+            <svg class="block-circle" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            <span class="fn-vis-label block-label">100% blocked</span>
+          </div>
+        </div>
+
+        <div class="fn-item">
+          <div class="fn-num">06</div>
+          <div class="fn-detail">
+            <h3>Fun</h3>
+            <p>Glitch mode. Random reorder, duplicate, corrupt, fragment.
+            Watch your app cope. Or not. Crank the intensity slider and
+            see what breaks first.</p>
+          </div>
+          <div class="fn-vis fn-vis-fun" aria-hidden="true">
+            <span class="glitch-char">⚡</span>
+            <span class="glitch-char">!</span>
+            <span class="glitch-char">?</span>
+            <span class="glitch-char">×</span>
+            <span class="fn-vis-label fun-label">CHAOS</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 03 — Why -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 03</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>Per-process. Not system-wide.</h2>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <p>
+        Most network throttling tools work at the system level — their
+        filters apply to <strong>all traffic that matches a tcpdump-style
+        expression</strong>. Useful, but blunt. They can't say "throttle
+        only this one app while leaving everything else alone" without
+        you knowing the exact IPs and ports involved.
+      </p>
+      <p>
+        Throttlr matches by <strong>process ID</strong>. A second
+        kernel-level handle listens for connection events the moment
+        they're created, building a real-time map of which flows belong
+        to which app. There's no polling, no timing window where new
+        connections slip through unfiltered. Every packet a targeted
+        process touches gets caught.
+      </p>
+      <p>
+        And because it's all running at the kernel level, the targeted
+        app sees <strong>real network conditions</strong>. There's
+        nothing to detect, nothing to bypass. From the app's
+        perspective, your connection just got worse.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 04 — Tools -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 04</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>Advanced tools.</h2>
+      <p class="info-sub">For when the toggles aren't enough.</p>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <div class="tool-list">
+        <div class="tool-item">
+          <h4>Connection Inspector</h4>
+          <p>Live table of every connection from the targeted app. Hostname (parsed straight from TLS SNI), country, protocol, ports, bytes up &amp; down, age, idle time.</p>
+        </div>
+        <div class="tool-item">
+          <h4>Domain &amp; Geo Block</h4>
+          <p>Built-in blocklists for ads, trackers, and telemetry. Block whole regions with the country picker. Add your own custom domains. Scope: just the targeted app.</p>
+        </div>
+        <div class="tool-item">
+          <h4>Practice Ping</h4>
+          <p>Find out what high-ping gameplay feels like. Six presets from LAN 5ms to Unplayable 400ms, or set a custom target. Calibrated jitter for realism.</p>
+        </div>
+        <div class="tool-item">
+          <h4>Recording &amp; Replay</h4>
+          <p>Capture an entire session — every stat tick, every config change — into a single file. Scrub the timeline, hit play, change speed (0.25× to 10×).</p>
+        </div>
+        <div class="tool-item">
+          <h4>Network Topology</h4>
+          <p>Live force-graph of your app's connections. Your machine sits at the center, every remote endpoint orbits around it. Animated traffic dots ride each edge.</p>
+        </div>
+        <div class="tool-item">
+          <h4>PCAP Capture</h4>
+          <p>Dump raw packets to a standard <code>.pcap</code> file. Open straight in Wireshark, tcpdump, or tshark. Captures only the targeted app — no cross-process noise.</p>
+        </div>
+        <div class="tool-item">
+          <h4>Filter Script</h4>
+          <p>Write your own per-packet filter expressions in a Python-like DSL. Sandboxed via AST whitelist. Variables for ports, hostnames, packet size, country.</p>
+        </div>
+        <div class="tool-item">
+          <h4>Quick Presets</h4>
+          <p>One-tap configurations. Vibes (Connection Killer, DNS Block) and real-world profiles (56k Modem, 3G, Cable, Fiber, Satellite). Save your own.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 05 — Made for -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 05</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>Made for.</h2>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <div class="for-list">
+        <div class="for-item">
+          <span class="for-marker">›</span>
+          <div>
+            <h4>Gamers</h4>
+            <p>Practice high-ping play. Test your aim at 200ms. Find out
+            who lags first. Stress-test your reflexes against bad networks
+            without inconveniencing the rest of your machine.</p>
+          </div>
+        </div>
+        <div class="for-item">
+          <span class="for-marker">›</span>
+          <div>
+            <h4>Developers</h4>
+            <p>QA your app under garbage networks. 56k. Spotty 3G.
+            Satellite link with 800ms ping. Reproduce that one bug
+            that only happens when packets arrive out of order.</p>
+          </div>
+        </div>
+        <div class="for-item">
+          <span class="for-marker">›</span>
+          <div>
+            <h4>Streamers</h4>
+            <p>Block ads, trackers, and telemetry surgically — per-app,
+            not system-wide. Your stream stays smooth. Your specific
+            game, browser, or chat client gets sanitized.</p>
+          </div>
+        </div>
+        <div class="for-item">
+          <span class="for-marker">›</span>
+          <div>
+            <h4>Network folk</h4>
+            <p>PCAP straight to Wireshark. Inspect TLS hostnames via
+            real-time SNI parsing. Script your own filters. Scope every
+            tool to a single process, not your whole NIC.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 06 — Specs -->
+<section class="info-section" data-section>
+  <div class="info-num" data-section-reveal>// 06</div>
+  <div class="info-grid">
+    <div class="info-head" data-section-reveal>
+      <h2>Specs.</h2>
+    </div>
+    <div class="info-body" data-section-reveal style="--d: 0.1s">
+      <div class="specs-grid">
+        <div><em>Platform</em><strong>Windows 10 / 11 (x64)</strong></div>
+        <div><em>Driver</em><strong>WinDivert kernel filter</strong></div>
+        <div><em>Permissions</em><strong>Administrator (packet capture)</strong></div>
+        <div><em>UI Framework</em><strong>PySide6 + QWebEngine</strong></div>
+        <div><em>Engine</em><strong>~14,700 lines of Python</strong></div>
+        <div><em>License</em><strong>MIT — free &amp; open-source</strong></div>
+        <div><em>File size</em><strong>~1 MB compressed</strong></div>
+        <div><em>Memory</em><strong>~120 MB resident</strong></div>
+        <div><em>Telemetry</em><strong>None. Zero. Never.</strong></div>
+        <div><em>Designs</em><strong>Industrial &middot; Midnight (6 accents)</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 07 — The Interface (full main app mockup) -->
+<section class="info-section showcase-section" data-section>
+  <div class="info-num" data-section-reveal>// 07</div>
+  <div class="showcase-head" data-section-reveal style="--d: 0.05s">
+    <h2>The interface.</h2>
+    <p class="info-sub">Six toggles. One yellow Start button. A side rail of seven advanced tools. Built around moving fast.</p>
+  </div>
+
+  <div class="showcase-stage" data-section-reveal style="--d: 0.15s">
+
+    <!-- Big main app mockup -->
+    <div class="ui-app">
+      <div class="ui-app-titlebar">
+        <span class="ui-tb-bolt">⚡</span>
+        <span class="ui-tb-name">Throttlr</span>
+        <span class="ui-tb-tag">by Billy's Matrix</span>
+        <span class="ui-tb-spacer"></span>
+        <span class="ui-tb-status"><span class="ui-dot"></span>Running &middot; F5</span>
+        <span class="ui-tb-ctrl">—</span>
+        <span class="ui-tb-ctrl">▢</span>
+        <span class="ui-tb-ctrl">×</span>
+      </div>
+
+      <div class="ui-app-body">
+
+        <!-- Main panels column -->
+        <div class="ui-main-col">
+          <div class="ui-panel">
+            <div class="ui-panel-head">
+              <span class="ui-panel-num">01</span>
+              <span class="ui-panel-title">Application</span>
+              <span class="ui-panel-spacer"></span>
+              <span class="ui-pill">⊕ MULTI-TARGET</span>
+            </div>
+            <div class="ui-target">
+              <span class="ui-target-icon">▤</span>
+              <div class="ui-target-info">
+                <span class="ui-target-label">SELECTED APP &middot; PID 8421</span>
+                <span class="ui-target-name">Discord.exe</span>
+              </div>
+              <span class="ui-target-arrow">›</span>
+            </div>
+            <div class="ui-recent">
+              <span class="ui-recent-label">RECENT</span>
+              <span class="ui-recent-chip">chrome.exe</span>
+              <span class="ui-recent-chip">spotify.exe</span>
+              <span class="ui-recent-chip">steam.exe</span>
+              <span class="ui-recent-chip">+4</span>
+            </div>
+          </div>
+
+          <div class="ui-panel">
+            <div class="ui-panel-head">
+              <span class="ui-panel-num">02</span>
+              <span class="ui-panel-title">Functions</span>
+              <span class="ui-panel-spacer"></span>
+              <span class="ui-panel-meta">// PER-DIRECTION</span>
+            </div>
+            <div class="ui-funcs">
+              <div class="ui-fn on">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Lag</span><span class="ui-fn-desc">add latency</span></div>
+                <span class="ui-fn-val">200 ms ±50</span>
+              </div>
+              <div class="ui-fn">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Drop</span><span class="ui-fn-desc">discard packets</span></div>
+                <span class="ui-fn-val ui-dim">—</span>
+              </div>
+              <div class="ui-fn on">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Throttle</span><span class="ui-fn-desc">cap bandwidth</span></div>
+                <span class="ui-fn-val">100 KB/s</span>
+              </div>
+              <div class="ui-fn">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Freeze</span><span class="ui-fn-desc">queue + burst</span></div>
+                <span class="ui-fn-val ui-dim">—</span>
+              </div>
+              <div class="ui-fn">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Block</span><span class="ui-fn-desc">total stop</span></div>
+                <span class="ui-fn-val ui-dim">—</span>
+              </div>
+              <div class="ui-fn">
+                <span class="ui-knob"></span>
+                <div class="ui-fn-info"><span class="ui-fn-name">Fun</span><span class="ui-fn-desc">glitch chaos</span></div>
+                <span class="ui-fn-val ui-dim">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action bar -->
+          <div class="ui-actionbar">
+            <span class="ui-ab-status"><span class="ui-dot"></span>Running &middot; Discord.exe</span>
+            <span class="ui-ab-stat"><em>SENT</em><strong>2,847</strong></span>
+            <span class="ui-ab-stat"><em>DROP</em><strong class="warn">14</strong></span>
+            <span class="ui-ab-stat"><em>DELAY</em><strong class="warn">312</strong></span>
+            <span class="ui-ab-stat"><em>QUEUE</em><strong>0</strong></span>
+            <span class="ui-ab-start">▶ STOP <span>F5</span></span>
+          </div>
+        </div>
+
+        <!-- Right side rail -->
+        <div class="ui-side-rail">
+          <div class="ui-rail-head">// TOOLS</div>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">⌕</span><span>Inspector</span></button>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">⚡</span><span>Practice Ping</span></button>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">●</span><span>Record</span></button>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">▦</span><span>Recordings</span></button>
+          <span class="ui-rail-divider"></span>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">⊛</span><span>Topology</span></button>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">▣</span><span>PCAP</span></button>
+          <button class="ui-rail-btn"><span class="ui-rail-icon">{·}</span><span>Script</span></button>
+        </div>
+
+      </div>
+
+      <!-- Scanline overlay -->
+      <div class="ui-app-scanlines" aria-hidden="true"></div>
+    </div>
+
+    <!-- Annotations -->
+    <span class="ui-anno ui-anno-1">
+      <span class="anno-dot"></span><span class="anno-line"></span>
+      <span class="anno-text">Drag-drop any .exe</span>
+    </span>
+    <span class="ui-anno ui-anno-2">
+      <span class="anno-text">Toggle live without restart</span>
+      <span class="anno-line"></span><span class="anno-dot"></span>
+    </span>
+    <span class="ui-anno ui-anno-3">
+      <span class="anno-dot"></span><span class="anno-line"></span>
+      <span class="anno-text">F5 / F8 / F9 / F10 hotkeys</span>
+    </span>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 08 — Tools, visualized -->
+<section class="info-section showcase-section" data-section>
+  <div class="info-num" data-section-reveal>// 08</div>
+  <div class="showcase-head" data-section-reveal style="--d: 0.05s">
+    <h2>Tools, visualized.</h2>
+    <p class="info-sub">Each tool opens in its own modal. Six of them, shown here as they actually look.</p>
+  </div>
+
+  <div class="tool-mocks-grid" data-section-reveal style="--d: 0.15s">
+
+    <!-- Connection Inspector -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">⌕</span>
+        <span class="tmh-title">Connection Inspector</span>
+        <span class="tmh-pill">LIVE</span>
+      </div>
+      <div class="tool-mock-body tmb-inspector">
+        <div class="ins-row ins-head">
+          <span>HOST</span><span>CC</span><span>PORT</span><span>↑/↓</span>
+        </div>
+        <div class="ins-row"><span>discord.gg</span><span>US</span><span>443</span><span class="ok">1.2K</span></div>
+        <div class="ins-row hot"><span>cdn.discordapp.com</span><span>US</span><span>443</span><span class="warn">45M</span></div>
+        <div class="ins-row"><span>gateway.discord.gg</span><span>US</span><span>443</span><span class="ok">8.4K</span></div>
+        <div class="ins-row"><span>static.cloudflare</span><span>US</span><span>443</span><span class="ok">120B</span></div>
+        <div class="ins-row dim"><span>ipv6.discord.media</span><span>US</span><span>443</span><span class="dim">880B</span></div>
+        <div class="ins-row dim"><span>fonts.gstatic.com</span><span>US</span><span>443</span><span class="dim">2.1K</span></div>
+      </div>
+    </article>
+
+    <!-- Network Topology -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">⊛</span>
+        <span class="tmh-title">Network Topology</span>
+        <span class="tmh-pill">LIVE</span>
+      </div>
+      <div class="tool-mock-body tmb-topology">
+        <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Edges -->
+          <line x1="160" y1="100" x2="60"  y2="40"  class="topo-edge"/>
+          <line x1="160" y1="100" x2="270" y2="50"  class="topo-edge"/>
+          <line x1="160" y1="100" x2="40"  y2="120" class="topo-edge"/>
+          <line x1="160" y1="100" x2="280" y2="140" class="topo-edge"/>
+          <line x1="160" y1="100" x2="90"  y2="170" class="topo-edge"/>
+          <line x1="160" y1="100" x2="240" y2="180" class="topo-edge"/>
+          <!-- Animated traffic dots -->
+          <circle r="2.5" class="topo-traffic" fill="#ffb800">
+            <animateMotion dur="2s" repeatCount="indefinite" path="M160,100 L270,50"/>
+          </circle>
+          <circle r="2.5" class="topo-traffic" fill="#ffb800">
+            <animateMotion dur="2.4s" repeatCount="indefinite" path="M160,100 L60,40"/>
+          </circle>
+          <circle r="2.5" class="topo-traffic" fill="#ffb800">
+            <animateMotion dur="1.8s" repeatCount="indefinite" path="M160,100 L280,140"/>
+          </circle>
+          <!-- Remote nodes -->
+          <circle cx="60"  cy="40"  r="6" class="topo-node"/>
+          <circle cx="270" cy="50"  r="8" class="topo-node hot"/>
+          <circle cx="40"  cy="120" r="5" class="topo-node"/>
+          <circle cx="280" cy="140" r="7" class="topo-node"/>
+          <circle cx="90"  cy="170" r="5" class="topo-node"/>
+          <circle cx="240" cy="180" r="6" class="topo-node"/>
+          <!-- Center node (you) -->
+          <circle cx="160" cy="100" r="14" class="topo-center"/>
+          <circle cx="160" cy="100" r="22" class="topo-center-pulse"/>
+          <text x="160" y="104" class="topo-center-label">YOU</text>
+          <!-- Labels -->
+          <text x="60"  y="28"  class="topo-label">discord.gg</text>
+          <text x="270" y="38"  class="topo-label" text-anchor="end">cdn.discord</text>
+          <text x="40"  y="138" class="topo-label">gateway</text>
+          <text x="280" y="158" class="topo-label" text-anchor="end">cloudflare</text>
+        </svg>
+      </div>
+    </article>
+
+    <!-- Filter Script -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">{·}</span>
+        <span class="tmh-title">Filter Script</span>
+        <span class="tmh-pill ok">COMPILED</span>
+      </div>
+      <div class="tool-mock-body tmb-script">
+<pre class="tm-code"><span class="cmt"># drop discord 30% of the time</span>
+<span class="kw">endswith</span>(pkt.host, <span class="str">".discord.gg"</span>)
+<span class="kw">and random</span>() &lt; <span class="num">0.3</span>
+
+<span class="cmt"># cap large UDP packets</span>
+pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span>
+pkt.size &gt; <span class="num">500</span></pre>
+        <div class="tm-status"><span class="status-dot"></span>0 errors &middot; ready</div>
+      </div>
+    </article>
+
+    <!-- Practice Ping -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">⚡</span>
+        <span class="tmh-title">Practice Ping</span>
+        <span class="tmh-pill">PRESETS</span>
+      </div>
+      <div class="tool-mock-body tmb-pp">
+        <div class="pp-grid">
+          <div class="pp-card"><strong>5</strong><em>LAN</em></div>
+          <div class="pp-card"><strong>30</strong><em>GOOD</em></div>
+          <div class="pp-card pp-active"><strong>60</strong><em>OK</em></div>
+          <div class="pp-card"><strong>100</strong><em>ROUGH</em></div>
+          <div class="pp-card"><strong>200</strong><em>BAD</em></div>
+          <div class="pp-card"><strong>400</strong><em>UNPLAY</em></div>
+        </div>
+        <div class="pp-slider">
+          <span class="pp-slider-track"></span>
+          <span class="pp-slider-fill"></span>
+          <span class="pp-slider-thumb"></span>
+          <span class="pp-slider-label">CUSTOM &middot; 60 ms</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Recording & Replay -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">▦</span>
+        <span class="tmh-title">Recording &amp; Replay</span>
+        <span class="tmh-pill">PLAYING 2×</span>
+      </div>
+      <div class="tool-mock-body tmb-rec">
+        <div class="rec-filename">session_2026-05-08.thrtlrec</div>
+        <div class="rec-timeline">
+          <span class="rec-progress"></span>
+          <span class="rec-thumb"></span>
+        </div>
+        <div class="rec-times">
+          <span>00:32</span>
+          <span class="rec-dim">/</span>
+          <span class="rec-dim">02:14</span>
+        </div>
+        <div class="rec-bars">
+          <span style="--h: 30%"></span><span style="--h: 60%"></span>
+          <span style="--h: 50%"></span><span style="--h: 90%"></span>
+          <span style="--h: 70%"></span><span style="--h: 95%"></span>
+          <span style="--h: 60%"></span><span style="--h: 40%"></span>
+          <span style="--h: 80%"></span><span style="--h: 55%"></span>
+          <span style="--h: 65%"></span><span style="--h: 75%"></span>
+          <span style="--h: 50%"></span><span style="--h: 85%"></span>
+          <span style="--h: 40%"></span><span style="--h: 70%"></span>
+          <span style="--h: 60%"></span><span style="--h: 90%"></span>
+        </div>
+        <div class="rec-controls">
+          <span class="rec-btn">◀◀</span>
+          <span class="rec-btn rec-btn-active">▶</span>
+          <span class="rec-btn">▶▶</span>
+          <span class="rec-speed">2× SPEED</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Quick Presets -->
+    <article class="tool-mock">
+      <div class="tool-mock-head">
+        <span class="tmh-icon">▥</span>
+        <span class="tmh-title">Quick Presets</span>
+        <span class="tmh-pill">VIBES</span>
+      </div>
+      <div class="tool-mock-body tmb-presets">
+        <div class="qp-tabs">
+          <span class="qp-tab qp-tab-active">VIBES</span>
+          <span class="qp-tab">REAL-WORLD</span>
+          <span class="qp-tab">MINE</span>
+        </div>
+        <div class="qp-grid">
+          <div class="qp-preset"><span class="qp-icon">☠</span><strong>Connection Killer</strong><em>drop 100%</em></div>
+          <div class="qp-preset"><span class="qp-icon">❄</span><strong>Freeze Burst</strong><em>2s freeze + release</em></div>
+          <div class="qp-preset"><span class="qp-icon">🐌</span><strong>Slow Connection</strong><em>throttle to 50 KB/s</em></div>
+          <div class="qp-preset"><span class="qp-icon">⚡</span><strong>Spike</strong><em>random 800ms spikes</em></div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thin"></div>
+
+<!-- 09 — Two designs (full-app mockups) -->
+<section class="info-section showcase-section" data-section>
+  <div class="info-num" data-section-reveal>// 09</div>
+  <div class="showcase-head" data-section-reveal style="--d: 0.05s">
+    <h2>Two designs.</h2>
+    <p class="info-sub">Same app, completely different vibe. Industrial &mdash; hazard tape, stencil, raw. Midnight &mdash; soft, glassy, six accent colors. Switch from Settings, no restart.</p>
+  </div>
+
+  <!-- ============================ INDUSTRIAL ============================ -->
+  <div class="theme-block" data-section-reveal style="--d: 0.15s">
+    <div class="theme-tag theme-tag--ind">
+      <span class="tt-icon">⚙</span>
+      <span class="tt-name">INDUSTRIAL</span>
+      <span class="tt-meta">// DEFAULT</span>
+    </div>
+
+    <div class="tw tw--ind">
+      <div class="tw-titlebar">
+        <span class="tw-tb-bolt">⚡</span>
+        <span class="tw-tb-name">Throttlr</span>
+        <span class="tw-tb-tag">— by Billy's Matrix</span>
+        <span class="tw-tb-spacer"></span>
+        <span class="tw-tb-status"><span class="tw-tb-dot"></span>Idle</span>
+        <span class="tw-tb-ctrl">—</span>
+        <span class="tw-tb-ctrl">▢</span>
+        <span class="tw-tb-ctrl">×</span>
+      </div>
+
+      <div class="tw-hazard"></div>
+
+      <div class="tw-body">
+        <div class="tw-main">
+
+          <!-- Hero card -->
+          <div class="tw-hero">
+            <span class="tw-hero-rule"></span>
+            <div class="tw-hero-info">
+              <span class="tw-eyebrow">// NETWORK THROTTLER</span>
+              <h3 class="tw-hero-title">Throttlr</h3>
+              <p class="tw-hero-desc">Per-application network throttler &mdash; drop, lag, throttle, freeze and block traffic for any process.</p>
+            </div>
+            <div class="tw-hero-btns">
+              <button class="tw-btn tw-btn--soft">▼ Profiles</button>
+              <button class="tw-btn tw-btn--primary">⚙ Settings</button>
+              <button class="tw-btn tw-btn--success">● Admin</button>
+            </div>
+          </div>
+
+          <!-- Application card -->
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-num">01</span>
+              <span class="tw-card-title">Application</span>
+              <span class="tw-flex"></span>
+              <button class="tw-btn tw-btn--outline tw-btn--sm">⊕ Multi-target</button>
+            </div>
+            <div class="tw-target">
+              <span class="tw-target-down">▼</span>
+              <div class="tw-target-info">
+                <span class="tw-target-label">NO APP SELECTED</span>
+                <span class="tw-target-name">Click here to choose application &mdash; or drag &amp; drop an .exe</span>
+              </div>
+              <span class="tw-target-arrow">›</span>
+            </div>
+            <div class="tw-recent">
+              <span class="tw-recent-label">RECENT</span>
+              <span class="tw-chip">chrome.exe</span>
+              <span class="tw-chip">Spotify.exe</span>
+            </div>
+          </div>
+
+          <!-- Quick Presets card -->
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-mini-icon">⚡</span>
+              <span class="tw-card-title">Quick Presets</span>
+              <span class="tw-flex"></span>
+              <span class="tw-meta-text">One-tap configurations</span>
+              <div class="tw-tabs">
+                <span class="tw-tab tw-tab--active">Vibes</span>
+                <span class="tw-tab">Real-world</span>
+                <span class="tw-tab">My presets</span>
+              </div>
+            </div>
+            <div class="tw-presets">
+              <div class="tw-preset"><span class="tw-preset-icon">💀</span><strong>Slow Connection</strong><em>250ms lag · 50 KB/s</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">☠</span><strong>Connection Killer</strong><em>30% drop · 800ms lag</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">❄</span><strong>Freeze Burst</strong><em>Hold &amp; release fast</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">⚡</span><strong>Spike</strong><em>Block all traffic</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">🚫</span><strong>DNS Block</strong><em>Drop DNS only</em></div>
+            </div>
+            <div class="tw-preset-actions">
+              <button class="tw-btn tw-btn--primary tw-btn--sm">💾 Save current as preset</button>
+              <button class="tw-btn tw-btn--outline tw-btn--sm">Clear all functions</button>
+            </div>
+          </div>
+
+          <!-- Functions card -->
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-num">02</span>
+              <span class="tw-card-title">Functions</span>
+              <span class="tw-flex"></span>
+              <span class="tw-meta-text">Toggle and adjust per-direction</span>
+            </div>
+            <div class="tw-fn-row">
+              <span class="tw-toggle">OFF</span>
+              <span class="tw-fn-name">Lag</span>
+              <span class="tw-checkboxes">
+                <span class="tw-checkbox tw-checkbox--checked">✓ In</span>
+                <span class="tw-checkbox tw-checkbox--checked">✓ Out</span>
+              </span>
+              <span class="tw-flex"></span>
+              <span class="tw-fn-label">Delay</span>
+              <span class="tw-input">500</span>
+              <span class="tw-unit">ms</span>
+              <span class="tw-fn-label">Jitter</span>
+              <span class="tw-input">0</span>
+              <span class="tw-unit">ms</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="tw-rail">
+          <div class="tw-rail-head">— — TOOLS — —</div>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⌕</span>Inspector</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">∿</span>Practice Pi...</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon tw-rail-icon--rec">●</span>Record</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">▦</span>Recordings</button>
+          <span class="tw-rail-gap"></span>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⊛</span>Topology</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">▣</span>PCAP</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⚡</span>Script</button>
+        </div>
+      </div>
+
+      <div class="tw-hazard"></div>
+
+      <div class="tw-actionbar">
+        <div class="tw-ab-info">
+          <span class="tw-ab-status"><span class="tw-tb-dot tw-tb-dot--idle"></span>Stopped</span>
+          <span class="tw-ab-sub">Pick an app and enable a function</span>
+        </div>
+        <div class="tw-ab-stats">
+          <div class="tw-ab-stat tw-ab-stat--sent"><em>SENT</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--drop"><em>DROP</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--delay"><em>DELAY</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--held"><em>HELD</em><strong>0</strong></div>
+        </div>
+        <button class="tw-ab-start">▶ Start <span class="tw-ab-key">F5</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ MIDNIGHT ============================ -->
+  <div class="theme-block" data-section-reveal style="--d: 0.25s">
+    <div class="theme-tag theme-tag--mid">
+      <span class="tt-icon">◔</span>
+      <span class="tt-name">MIDNIGHT</span>
+      <span class="tt-meta">// AURORA · 6 ACCENTS</span>
+    </div>
+
+    <div class="tw tw--mid">
+      <div class="tw-titlebar">
+        <span class="tw-tb-bolt">⚡</span>
+        <span class="tw-tb-name">Throttlr</span>
+        <span class="tw-tb-tag">— by Billy's Matrix</span>
+        <span class="tw-tb-spacer"></span>
+        <span class="tw-tb-status"><span class="tw-tb-dot"></span>Idle</span>
+        <span class="tw-tb-ctrl">—</span>
+        <span class="tw-tb-ctrl">▢</span>
+        <span class="tw-tb-ctrl">×</span>
+      </div>
+
+      <div class="tw-body">
+        <div class="tw-main">
+
+          <div class="tw-hero">
+            <span class="tw-hero-rule"></span>
+            <div class="tw-hero-info">
+              <span class="tw-eyebrow">// NETWORK THROTTLER</span>
+              <h3 class="tw-hero-title">Throttlr</h3>
+              <p class="tw-hero-desc">Per-application network throttler &mdash; drop, lag, throttle, freeze and block traffic for any process.</p>
+            </div>
+            <div class="tw-hero-btns">
+              <button class="tw-btn tw-btn--soft">▼ Profiles</button>
+              <button class="tw-btn tw-btn--primary">⚙ Settings</button>
+              <button class="tw-btn tw-btn--success">● Admin</button>
+            </div>
+          </div>
+
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-num">01</span>
+              <span class="tw-card-title">Application</span>
+              <span class="tw-flex"></span>
+              <button class="tw-btn tw-btn--outline tw-btn--sm">⊕ Multi-target</button>
+            </div>
+            <div class="tw-target">
+              <span class="tw-target-down">▼</span>
+              <div class="tw-target-info">
+                <span class="tw-target-label">NO APP SELECTED</span>
+                <span class="tw-target-name">Click here to choose application &mdash; or drag &amp; drop an .exe</span>
+              </div>
+              <span class="tw-target-arrow">›</span>
+            </div>
+            <div class="tw-recent">
+              <span class="tw-recent-label">RECENT</span>
+              <span class="tw-chip">chrome.exe</span>
+              <span class="tw-chip">Spotify.exe</span>
+            </div>
+          </div>
+
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-mini-icon">⚡</span>
+              <span class="tw-card-title">Quick Presets</span>
+              <span class="tw-flex"></span>
+              <span class="tw-meta-text">One-tap configurations</span>
+              <div class="tw-tabs">
+                <span class="tw-tab tw-tab--active">Vibes</span>
+                <span class="tw-tab">Real-world</span>
+                <span class="tw-tab">My presets</span>
+              </div>
+            </div>
+            <div class="tw-presets">
+              <div class="tw-preset"><span class="tw-preset-icon">💀</span><strong>Slow Connection</strong><em>250ms lag · 50 KB/s</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">☠</span><strong>Connection Killer</strong><em>30% drop · 800ms lag</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">❄</span><strong>Freeze Burst</strong><em>Hold &amp; release fast</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">⚡</span><strong>Spike</strong><em>Block all traffic</em></div>
+              <div class="tw-preset"><span class="tw-preset-icon">🚫</span><strong>DNS Block</strong><em>Drop DNS only</em></div>
+            </div>
+            <div class="tw-preset-actions">
+              <button class="tw-btn tw-btn--primary tw-btn--sm">💾 Save current as preset</button>
+              <button class="tw-btn tw-btn--outline tw-btn--sm">Clear all functions</button>
+            </div>
+          </div>
+
+          <div class="tw-card">
+            <div class="tw-card-head">
+              <span class="tw-num">02</span>
+              <span class="tw-card-title">Functions</span>
+              <span class="tw-flex"></span>
+              <span class="tw-meta-text">Toggle and adjust per-direction</span>
+            </div>
+            <div class="tw-fn-row">
+              <span class="tw-toggle">OFF</span>
+              <span class="tw-fn-name">Lag</span>
+              <span class="tw-checkboxes">
+                <span class="tw-checkbox tw-checkbox--checked">✓ In</span>
+                <span class="tw-checkbox tw-checkbox--checked">✓ Out</span>
+              </span>
+              <span class="tw-flex"></span>
+              <span class="tw-fn-label">Delay</span>
+              <span class="tw-input">500</span>
+              <span class="tw-unit">ms</span>
+              <span class="tw-fn-label">Jitter</span>
+              <span class="tw-input">0</span>
+              <span class="tw-unit">ms</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="tw-rail">
+          <div class="tw-rail-head">TOOLS</div>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⌕</span>Inspector</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">∿</span>Practice P...</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon tw-rail-icon--rec">●</span>Record</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">▦</span>Recordings</button>
+          <span class="tw-rail-gap"></span>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⊛</span>Topology</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">▣</span>PCAP</button>
+          <button class="tw-rail-btn"><span class="tw-rail-icon">⚡</span>Script</button>
+        </div>
+      </div>
+
+      <div class="tw-actionbar">
+        <div class="tw-ab-info">
+          <span class="tw-ab-status"><span class="tw-tb-dot tw-tb-dot--idle"></span>Stopped</span>
+          <span class="tw-ab-sub">Pick an app and enable a function</span>
+        </div>
+        <div class="tw-ab-stats">
+          <div class="tw-ab-stat tw-ab-stat--sent"><em>SENT</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--drop"><em>DROP</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--delay"><em>DELAY</em><strong>0</strong></div>
+          <div class="tw-ab-stat tw-ab-stat--held"><em>HELD</em><strong>0</strong></div>
+        </div>
+        <button class="tw-ab-start">▶ Start <span class="tw-ab-key">F5</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 accent variants -->
+  <div class="theme-accents-bar" data-section-reveal style="--d: 0.35s">
+    <div class="tab-label">// MIDNIGHT ACCENTS &middot; 6 BUILT-IN + CUSTOM HEX</div>
+    <div class="tab-list">
+      <span class="tab-swatch tab-swatch--active" style="--c: #5ce1e6"><span class="tab-dot"></span><em>Aurora</em></span>
+      <span class="tab-swatch" style="--c: #ff8a5c"><span class="tab-dot"></span><em>Sunset</em></span>
+      <span class="tab-swatch" style="--c: #7be095"><span class="tab-dot"></span><em>Forest</em></span>
+      <span class="tab-swatch" style="--c: #ffd166"><span class="tab-dot"></span><em>Amber</em></span>
+      <span class="tab-swatch" style="--c: #ff7faa"><span class="tab-dot"></span><em>Rose</em></span>
+      <span class="tab-swatch" style="--c: #5cb3ff"><span class="tab-dot"></span><em>Ocean</em></span>
+      <span class="tab-swatch tab-swatch--custom"><span class="tab-dot"></span><em>HEX</em></span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CLOSER ===================== -->
+
+<div class="hazard-strip hazard-strip-thick"></div>
+
+<section class="closer">
+  <span class="corner corner-tl"></span>
+  <span class="corner corner-tr"></span>
+  <span class="corner corner-bl"></span>
+  <span class="corner corner-br"></span>
+  <div class="closer-eyebrow" data-section-reveal>// END OF TRANSMISSION</div>
+  <h2 class="closer-title" data-section-reveal style="--d: 0.1s" data-text="Soon.">Soon.</h2>
+  <p class="closer-text" data-section-reveal style="--d: 0.2s">
+    Throttlr is being prepared for transmission.
+    <br>
+    Hand us your signal &mdash; we'll ping you back when it's live.
+  </p>
+
+  <!-- Notify form. Netlify Forms attributes wire this up automatically
+       when deployed: emails land in your Netlify dashboard. -->
+  <form class="notify-form" id="notify-form"
+        name="notify" method="POST"
+        data-netlify="true" data-netlify-honeypot="bot-field"
+        data-section-reveal style="--d: 0.3s" novalidate>
+    <input type="hidden" name="form-name" value="notify">
+    <p class="notify-hp" hidden><label>Skip: <input name="bot-field"></label></p>
+    <div class="notify-eyebrow">
+      <span class="notify-tick"></span>
+      <span>// NOTIFY ON RELEASE</span>
+      <span class="notify-tick"></span>
+    </div>
+    <div class="notify-input-wrap">
+      <span class="notify-at">@</span>
+      <input type="email" name="email" id="notify-email"
+             class="notify-input"
+             placeholder="your.signal@channel.net"
+             autocomplete="email" required>
+      <button type="submit" class="notify-btn" id="notify-btn">
+        <span class="notify-btn-text">NOTIFY ME</span>
+        <span class="notify-btn-arrow">→</span>
+      </button>
+    </div>
+    <div class="notify-feedback" id="notify-feedback" aria-live="polite" role="status"></div>
+  </form>
+</section>
+
+<div class="hazard-strip hazard-strip-thick"></div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="foot">
+  <div class="foot-left">
+    <span class="foot-bolt">⚡</span>
+    <strong>THROTTLR</strong>
+    <span class="foot-tag">[ BY BILLY'S MATRIX ]</span>
+  </div>
+  <div class="foot-right">
+    <span>© 2026 BILLY'S MATRIX</span>
+    <span class="foot-sep">·</span>
+    <span>BUILT FOR WINDOWS</span>
+    <span class="foot-sep">·</span>
+    <span class="foot-blink">SIGNAL ●</span>
+  </div>
+</footer>
+
+<div class="page-scanlines" aria-hidden="true"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
