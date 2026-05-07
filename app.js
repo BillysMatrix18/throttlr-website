@@ -128,8 +128,9 @@
 
 // ============================================================================
 // 6. NOTIFY FORM
-// Format check → dedup against localStorage → POST to Netlify Forms (if
-// deployed there) → show feedback. Three states: error / warn / success.
+// Format check → POST to Netlify Forms → show feedback. Always submits to
+// Netlify when format is valid. localStorage is used only for tracking, never
+// for blocking submissions (so users can always resubmit if needed).
 // ============================================================================
 (function () {
   const form     = document.getElementById('notify-form');
@@ -159,7 +160,6 @@
     feedback.textContent = message;
     clearTimeout(feedbackTimer);
     if (type !== 'success') {
-      // Auto-clear non-success messages after a few seconds
       feedbackTimer = setTimeout(function () {
         feedback.className = 'notify-feedback';
         feedback.textContent = '';
@@ -173,15 +173,16 @@
     setTimeout(function () { wrap.classList.remove('is-error'); }, 600);
   }
 
-  // If this browser already submitted before, lock the form on load so the
-  // returning visitor doesn't see a blank form again.
-  const existing = loadList();
-  if (existing.length > 0) {
+  function lockSuccess() {
     form.classList.add('is-locked');
-    showFeedback('warn', "You're already on the list. We'll transmit when it's live.");
     if (btn) btn.disabled = true;
-    input.value = existing[existing.length - 1];
+    showFeedback('success', "Locked in. We'll transmit when it's live.");
   }
+
+  // NOTE: We intentionally do NOT auto-lock the form on revisit. Previously
+  // this blocked legitimate submissions if the user had ever tested locally,
+  // and Netlify never received the POST. localStorage is now informational
+  // only — users can always resubmit.
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -195,34 +196,45 @@
       return;
     }
 
-    // 2. Dedup check (per-browser via localStorage)
-    const list = loadList();
-    if (list.indexOf(email) !== -1) {
-      showFeedback('warn', "Already on the list — we'll transmit soon.");
-      return;
-    }
+    // 2. Build POST body for Netlify
+    const formData = new FormData(form);
+    formData.set('form-name', 'notify');   // ensure it's set even if hidden input is missed
+    formData.set('email', email);          // ensure normalized email is sent
 
-    // 3. Save locally
-    list.push(email);
-    saveList(list);
+    const params = new URLSearchParams();
+    formData.forEach(function (v, k) { params.append(k, v); });
 
-    // 4. POST to Netlify Forms (silent, only works on Netlify deploy).
-    //    On non-Netlify hosts the fetch fails harmlessly — local dedup
-    //    + success message still work for the user.
-    if (form.getAttribute('data-netlify') === 'true') {
-      const formData = new FormData(form);
-      const params = new URLSearchParams();
-      formData.forEach(function (v, k) { params.append(k, v); });
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
-      }).catch(function () { /* silent — local list already saved */ });
-    }
-
-    // 5. Success state
-    form.classList.add('is-locked');
+    // 3. Disable button while in flight, show "transmitting" feedback
     if (btn) btn.disabled = true;
-    showFeedback('success', "Locked in. We'll transmit when it's live.");
+    showFeedback('warn', 'Transmitting…');
+    console.log('[notify] submitting', { email: email, body: params.toString() });
+
+    // 4. POST to Netlify Forms (root path of the site)
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    }).then(function (response) {
+      console.log('[notify] response status:', response.status, response.statusText);
+      if (response.ok || response.status === 200 || response.status === 303) {
+        // 200 = JSON-ish success, 303 = Netlify's standard redirect-after-POST
+        const list = loadList();
+        if (list.indexOf(email) === -1) list.push(email);
+        saveList(list);
+        lockSuccess();
+      } else {
+        if (btn) btn.disabled = false;
+        showFeedback('error', 'Submission failed (' + response.status + '). Please try again.');
+        console.error('[notify] non-OK response', response);
+      }
+    }).catch(function (err) {
+      // Network failure or non-Netlify host — save locally so the user gets
+      // confirmation, but log the actual error so it can be debugged.
+      console.error('[notify] fetch failed:', err);
+      const list = loadList();
+      if (list.indexOf(email) === -1) list.push(email);
+      saveList(list);
+      lockSuccess();
+    });
   });
 })();
