@@ -1,102 +1,39 @@
 // ============================================================================
-// THROTTLR — coming soon (max-impact)
-// 1. CRT noise canvas
-// 2. Cursor spotlight (CSS vars)
-// 3. Bolt mouse parallax
-// 4. Scroll-triggered section reveals
-// 5. Live clock in telemetry box
+// THROTTLR — landing site interactions
+// Scroll progress bar, reveal-on-scroll, animated counters.
+// Plain vanilla JS, no dependencies.
 // ============================================================================
 
 (function () {
   'use strict';
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // ---- Scroll progress indicator ----
+  // Updates the width of the top progress bar based on scroll position.
+  const progressEl = document.getElementById('scrollProgress');
+  let scrollTicking = false;
 
-  // -------------------------------------------------------------------------
-  // 1. CRT NOISE CANVAS
-  // -------------------------------------------------------------------------
-  const noiseCanvas = document.getElementById('noise');
-  if (noiseCanvas && noiseCanvas.getContext) {
-    const ctx = noiseCanvas.getContext('2d');
-    function resizeNoise() {
-      noiseCanvas.width = Math.floor(window.innerWidth / 2);
-      noiseCanvas.height = Math.floor(window.innerHeight / 2);
-      noiseCanvas.style.width = window.innerWidth + 'px';
-      noiseCanvas.style.height = window.innerHeight + 'px';
+  function updateProgress() {
+    const doc = document.documentElement;
+    const scrollTop = window.pageYOffset || doc.scrollTop;
+    const scrollHeight = doc.scrollHeight - doc.clientHeight;
+    const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    if (progressEl) progressEl.style.width = pct + '%';
+    scrollTicking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(updateProgress);
+      scrollTicking = true;
     }
-    function paintNoise() {
-      const w = noiseCanvas.width, h = noiseCanvas.height;
-      const img = ctx.createImageData(w, h);
-      const data = img.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const v = (Math.random() * 255) | 0;
-        data[i] = data[i + 1] = data[i + 2] = v;
-        data[i + 3] = 255;
-      }
-      ctx.putImageData(img, 0, 0);
-    }
-    resizeNoise();
-    paintNoise();
-    if (!reduceMotion) setInterval(paintNoise, 120);
-    window.addEventListener('resize', function () { resizeNoise(); paintNoise(); });
-  }
+  }, { passive: true });
 
-  // -------------------------------------------------------------------------
-  // 2. CURSOR SPOTLIGHT
-  // Update CSS vars --mx and --my to drive the radial-gradient .cursor-light.
-  // -------------------------------------------------------------------------
-  if (!reduceMotion) {
-    let cursorTicking = false;
-    let cx = window.innerWidth / 2, cy = window.innerHeight * 0.3;
-    document.addEventListener('mousemove', function (e) {
-      cx = e.clientX;
-      cy = e.clientY;
-      if (!cursorTicking) {
-        requestAnimationFrame(function () {
-          document.documentElement.style.setProperty('--mx', cx + 'px');
-          document.documentElement.style.setProperty('--my', cy + 'px');
-          cursorTicking = false;
-        });
-        cursorTicking = true;
-      }
-    }, { passive: true });
-  }
+  updateProgress();
 
-  // -------------------------------------------------------------------------
-  // 3. BOLT MOUSE PARALLAX
-  // Subtle 3D tilt of the bolt SVG that tracks the cursor in the hero area.
-  // -------------------------------------------------------------------------
-  const bolt = document.getElementById('boltSvg');
-  const hero = document.querySelector('.hero');
-  if (bolt && hero && !reduceMotion && window.matchMedia('(min-width: 1100px)').matches) {
-    let parallaxTicking = false;
-    hero.addEventListener('mousemove', function (e) {
-      const rect = hero.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;   // 0 to 1
-      const y = (e.clientY - rect.top) / rect.height;
-      if (!parallaxTicking) {
-        requestAnimationFrame(function () {
-          // Combine with the float animation by overriding transform
-          const ry = (x - 0.5) * 18;   // ±9deg
-          const rx = -(y - 0.5) * 12;  // ±6deg
-          bolt.style.transform =
-            `perspective(800px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg)`;
-          parallaxTicking = false;
-        });
-        parallaxTicking = true;
-      }
-    });
-    hero.addEventListener('mouseleave', function () {
-      bolt.style.transform = '';   // resume CSS keyframe
-    });
-  }
-
-  // -------------------------------------------------------------------------
-  // 4. SCROLL-TRIGGERED SECTION REVEALS
-  // Adds .is-visible to elements with [data-section-reveal] when they enter
-  // the viewport — CSS handles the actual transition.
-  // -------------------------------------------------------------------------
-  const revealEls = document.querySelectorAll('[data-section-reveal]');
+  // ---- Reveal-on-scroll ----
+  // Adds .is-visible to .reveal elements when they enter viewport.
+  // Delays are set inline via --d CSS variable.
+  const revealEls = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window && revealEls.length) {
     const io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -105,136 +42,132 @@
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -8% 0px',
+    });
     revealEls.forEach(function (el) { io.observe(el); });
   } else {
+    // No IO support — show everything immediately
     revealEls.forEach(function (el) { el.classList.add('is-visible'); });
   }
 
-  // -------------------------------------------------------------------------
-  // 5. LIVE CLOCK in the top-right telemetry box
-  // -------------------------------------------------------------------------
-  const timeEl = document.getElementById('telem-time');
-  if (timeEl) {
-    function pad(n) { return n < 10 ? '0' + n : '' + n; }
-    function tickClock() {
-      const d = new Date();
-      timeEl.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-    }
-    tickClock();
-    setInterval(tickClock, 1000);
-  }
-})();
+  // ---- Animated counters ----
+  // Counts up [data-count] elements when they first enter viewport.
+  // Numbers with commas are preserved in formatting.
+  const counterEls = document.querySelectorAll('[data-count]');
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-count'), 10);
+    if (!Number.isFinite(target)) return;
+    const duration = 1400;
+    const startTime = performance.now();
+    const formatter = new Intl.NumberFormat('en-US');
 
-// ============================================================================
-// 6. NOTIFY FORM
-// Format check → POST to Netlify Forms → show feedback. Always submits to
-// Netlify when format is valid. localStorage is used only for tracking, never
-// for blocking submissions (so users can always resubmit if needed).
-// ============================================================================
-(function () {
-  const form     = document.getElementById('notify-form');
-  const input    = document.getElementById('notify-email');
-  const wrap     = form && form.querySelector('.notify-input-wrap');
-  const feedback = document.getElementById('notify-feedback');
-  const btn      = document.getElementById('notify-btn');
-  if (!form || !input || !feedback) return;
-
-  // Loose email format check — catches obvious garbage but stays permissive
-  const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  const STORAGE_KEY = 'throttlr_notify_list';
-
-  function loadList() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (_) { return []; }
-  }
-  function saveList(list) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (_) {}
-  }
-
-  let feedbackTimer = null;
-  function showFeedback(type, message) {
-    feedback.className = 'notify-feedback notify-feedback-' + type + ' is-active';
-    feedback.textContent = message;
-    clearTimeout(feedbackTimer);
-    if (type !== 'success') {
-      feedbackTimer = setTimeout(function () {
-        feedback.className = 'notify-feedback';
-        feedback.textContent = '';
-      }, 5000);
-    }
-  }
-
-  function flashError() {
-    if (!wrap) return;
-    wrap.classList.add('is-error');
-    setTimeout(function () { wrap.classList.remove('is-error'); }, 600);
-  }
-
-  function lockSuccess() {
-    form.classList.add('is-locked');
-    if (btn) btn.disabled = true;
-    showFeedback('success', "Locked in. We'll transmit when it's live.");
-  }
-
-  // NOTE: We intentionally do NOT auto-lock the form on revisit. Previously
-  // this blocked legitimate submissions if the user had ever tested locally,
-  // and Netlify never received the POST. localStorage is now informational
-  // only — users can always resubmit.
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const email = (input.value || '').trim().toLowerCase();
-
-    // 1. Format check
-    if (!EMAIL_RX.test(email)) {
-      flashError();
-      showFeedback('error', 'Invalid email — try again.');
-      input.focus();
-      return;
-    }
-
-    // 2. Build POST body for Netlify
-    const formData = new FormData(form);
-    formData.set('form-name', 'notify');   // ensure it's set even if hidden input is missed
-    formData.set('email', email);          // ensure normalized email is sent
-
-    const params = new URLSearchParams();
-    formData.forEach(function (v, k) { params.append(k, v); });
-
-    // 3. Disable button while in flight, show "transmitting" feedback
-    if (btn) btn.disabled = true;
-    showFeedback('warn', 'Transmitting…');
-    console.log('[notify] submitting', { email: email, body: params.toString() });
-
-    // 4. POST to Netlify Forms (root path of the site)
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
-    }).then(function (response) {
-      console.log('[notify] response status:', response.status, response.statusText);
-      if (response.ok || response.status === 200 || response.status === 303) {
-        // 200 = JSON-ish success, 303 = Netlify's standard redirect-after-POST
-        const list = loadList();
-        if (list.indexOf(email) === -1) list.push(email);
-        saveList(list);
-        lockSuccess();
+    function tick(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = Math.round(target * eased);
+      el.textContent = formatter.format(value);
+      if (t < 1) {
+        window.requestAnimationFrame(tick);
       } else {
-        if (btn) btn.disabled = false;
-        showFeedback('error', 'Submission failed (' + response.status + '). Please try again.');
-        console.error('[notify] non-OK response', response);
+        el.textContent = formatter.format(target);
       }
-    }).catch(function (err) {
-      // Network failure or non-Netlify host — save locally so the user gets
-      // confirmation, but log the actual error so it can be debugged.
-      console.error('[notify] fetch failed:', err);
-      const list = loadList();
-      if (list.indexOf(email) === -1) list.push(email);
-      saveList(list);
-      lockSuccess();
+    }
+    window.requestAnimationFrame(tick);
+  }
+
+  if ('IntersectionObserver' in window && counterEls.length) {
+    const counterIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          animateCounter(entry.target);
+          counterIO.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    counterEls.forEach(function (el) { counterIO.observe(el); });
+  }
+
+  // ---- Subtle parallax on hero mock ----
+  // Mouse-based 3D tilt on the floating app screenshot.
+  const mock = document.querySelector('.hero-mock .mock-screen');
+  const heroSection = document.querySelector('.hero');
+  if (mock && heroSection && window.matchMedia('(min-width: 1100px)').matches) {
+    let parallaxTicking = false;
+    let mouseX = 0, mouseY = 0;
+    heroSection.addEventListener('mousemove', function (e) {
+      const rect = heroSection.getBoundingClientRect();
+      mouseX = (e.clientX - rect.left) / rect.width;  // 0 to 1
+      mouseY = (e.clientY - rect.top) / rect.height;
+      if (!parallaxTicking) {
+        window.requestAnimationFrame(function () {
+          // Map to small rotations around the base orientation
+          const ry = -7 + (mouseX - 0.5) * -6;  // ±3deg around -7
+          const rx = 3 + (mouseY - 0.5) * 4;     // ±2deg around 3
+          mock.style.transform =
+            'rotateY(' + ry.toFixed(2) + 'deg) ' +
+            'rotateX(' + rx.toFixed(2) + 'deg)';
+          parallaxTicking = false;
+        });
+        parallaxTicking = true;
+      }
     });
-  });
+    heroSection.addEventListener('mouseleave', function () {
+      mock.style.transform = '';  // reset to CSS default + animation
+    });
+  }
 })();
+
+
+  // ---- Auto-fetch latest release from GitHub ----
+  // Two jobs in one fetch:
+  //   1. Update [data-auto-version] elements with the actual tag (e.g. "v3.1.2")
+  //   2. Update [data-auto-download] / .nav-cta / .btn-download href attributes
+  //      to point at the actual .exe asset URL in the latest release.
+  // Why job #2: GitHub's /releases/latest/download/FILENAME redirect requires
+  // an exact filename match. If the installer is uploaded as
+  // "Throttlr-Setup-3.1.2.exe" but the website hardcodes "Throttlr-Setup.exe",
+  // it 404s. Fetching the asset list from the API lets the site survive
+  // arbitrary filename changes between releases.
+  // Silent fail — the static fallback href on the buttons still works if
+  // GitHub's API is unreachable or rate-limited.
+  (function fetchLatestRelease() {
+    const verEls = document.querySelectorAll('[data-auto-version]');
+    // Any download button that should be auto-rewritten: nav + hero + final CTA
+    const dlEls = document.querySelectorAll(
+      '.nav-cta, .btn-download, [data-auto-download]'
+    );
+    if (!verEls.length && !dlEls.length) return;
+    fetch('https://api.github.com/repos/BillysMatrix18/throttlr-releases/releases/latest', {
+      headers: { 'Accept': 'application/vnd.github+json' }
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        // Job 1: version labels
+        if (data.tag_name) {
+          const tag = String(data.tag_name);
+          verEls.forEach(function (el) { el.textContent = tag; });
+        }
+        // Job 2: download hrefs. Look for the FIRST .exe asset in the
+        // release (there should only be one). Prefer ones with "Setup"
+        // in the name (the installer) over any other .exe.
+        if (Array.isArray(data.assets) && data.assets.length) {
+          const exes = data.assets.filter(function (a) {
+            return /\.exe$/i.test(a.name) && a.browser_download_url;
+          });
+          if (!exes.length) return;
+          // Prefer the installer (filename contains "Setup") over portable .exe
+          const installer = exes.find(function (a) {
+            return /setup/i.test(a.name);
+          }) || exes[0];
+          dlEls.forEach(function (el) {
+            el.setAttribute('href', installer.browser_download_url);
+          });
+        }
+      })
+      .catch(function () { /* silent fail — static href fallback still works */ });
+  })();
