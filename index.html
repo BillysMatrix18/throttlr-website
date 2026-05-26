@@ -57,6 +57,7 @@
     <a href="#why">Why</a>
     <a href="#functions">Functions</a>
     <a href="#tools">Tools</a>
+    <a href="#power">Power</a>
     <a href="#how">How it works</a>
     <a href="#faq">FAQ</a>
     <a href="https://github.com/BillysMatrix18/throttlr-releases" class="nav-github" target="_blank" rel="noopener">
@@ -531,10 +532,78 @@
 
 <div class="hazard-strip hazard-strip-thick"></div>
 
+<!-- ============== POWER FEATURES ============== -->
+<section class="section section-power" id="power">
+  <div class="section-head reveal">
+    <span class="section-num">// 04</span>
+    <h2 class="section-title">Built for serious testing.</h2>
+    <p class="section-sub">Throttlr is more than a few toggles. The features below are what turn it from a hobby utility into something you can rely on across long sessions, multiple machines, and complex scenarios.</p>
+  </div>
+  <div class="power-grid">
+    <article class="power-card reveal">
+      <div class="power-tag">PROFILES</div>
+      <h3 class="power-title">Save and switch full configs in one click.</h3>
+      <p>Save every function setting, every targeted app, every preset — as a named profile. Switch between "Testing FarCry5", "Testing Discord", "Streamer setup", "Just chrome" with one click. Profiles export to JSON so you can share configs with someone else, back them up, or version-control your test setups.</p>
+      <div class="power-meta"><span>JSON export/import</span><span>Per-app memory</span><span>Header dropdown</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.05s">
+      <div class="power-tag">FLOATING OVERLAY</div>
+      <h3 class="power-title">Live stats that float over your game.</h3>
+      <p>An always-on-top widget that shows packets sent, dropped, delayed, current throughput, and active functions — without alt-tabbing out of your game or stream. Themed to match the main app. Ghost mode, stream-safe mode, adjustable opacity, advanced layout. Lock it in place once you've got it where you want it.</p>
+      <div class="power-meta"><span>Always-on-top</span><span>Stream-safe</span><span>Themeable</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.1s">
+      <div class="power-tag">AUTOMATION RULES</div>
+      <h3 class="power-title">If this happens, do that — automatically.</h3>
+      <p>Build automation rules with a condition and an action. Examples: "If Discord is the active app, turn off lag." "If bandwidth exceeds 5MB/min, enable throttle." "At 9pm on weekdays, start capture on chrome.exe." A real if-this-then-that engine specifically for your network conditions — runs in the background, fires when conditions match.</p>
+      <div class="power-meta"><span>Conditional triggers</span><span>Background engine</span><span>Per-rule enable/disable</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.15s">
+      <div class="power-tag">LAN SYNC</div>
+      <h3 class="power-title">Control Throttlr on multiple PCs from one.</h3>
+      <p>Pair two or more machines on the same network. Trigger Start/Stop/Freeze on the remote machine without leaving your seat. Useful for QA testers running matrices of conditions across multiple test boxes, or for streamers configuring a second PC. Encrypted pairing with a one-time code — no internet roundtrip, no cloud servers.</p>
+      <div class="power-meta"><span>Local network only</span><span>Encrypted pairing</span><span>No cloud</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.2s">
+      <div class="power-tag">THROTTLR STUDIO</div>
+      <h3 class="power-title">Edit recordings on a visual timeline.</h3>
+      <p>Recordings aren't just for playback — Throttlr Studio is a timeline editor where you can trim, splice, and rearrange captured sessions. Drag events to retime them. Save the edited timeline back to a <code>.thrtlrec</code> file. Build the perfect repro of a network issue, then replay it on demand whenever you need to test against it.</p>
+      <div class="power-meta"><span>Visual timeline</span><span>Trim + retime events</span><span>Save edited copy</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.25s">
+      <div class="power-tag">PROCESS TREE PICKER</div>
+      <h3 class="power-title">Target launcher + all its children.</h3>
+      <p>Some apps spawn helper processes — Riot Client launches League, Battle.net launches games, Discord splits into renderer + helper. The Process Tree picker shows the full parent/child hierarchy so you can target a launcher and have Throttlr automatically follow every child it spawns. Optional excludes for any child you want to keep untouched.</p>
+      <div class="power-meta"><span>Full hierarchy view</span><span>Child auto-follow</span><span>Per-pid excludes</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.3s">
+      <div class="power-tag">MOUSE HOTKEYS</div>
+      <h3 class="power-title">Bind Mouse 3/4/5 to anything.</h3>
+      <p>Most apps only support keyboard hotkeys. Throttlr supports mouse buttons too — Mouse 3 (middle click), Mouse 4 (side back), and Mouse 5 (side forward). Bind Start, Freeze, Block, or any other action to a side button on your gaming mouse. Toggle Throttlr without taking your hand off the mouse.</p>
+      <div class="power-meta"><span>Mouse 3 / 4 / 5</span><span>Global system-wide</span><span>Game-friendly</span></div>
+    </article>
+
+    <article class="power-card reveal" style="--d: 0.35s">
+      <div class="power-tag">AUTO-UPDATE</div>
+      <h3 class="power-title">New versions install themselves.</h3>
+      <p>Throttlr checks GitHub for new releases on launch. When a new version is available you see a clear banner with the changelog — one click to install. The update downloads, replaces the running .exe via an out-of-process batch script, and relaunches itself. No re-installer, no manual download, no missed updates.</p>
+      <div class="power-meta"><span>GitHub Releases</span><span>One-click install</span><span>Background check</span></div>
+    </article>
+  </div>
+</section>
+
+<div class="hazard-strip"></div>
+
 <!-- ============== HOW IT WORKS ============== -->
 <section class="section section-how" id="how">
   <div class="section-head reveal">
-    <span class="section-num">// 04</span>
+    <span class="section-num">// 05</span>
     <h2 class="section-title">How it works.</h2>
     <p class="section-sub">Two kernel-level handles. One picks up connection events the moment they're made; the other captures, modifies, or drops packets in real time.</p>
   </div>
@@ -610,7 +679,7 @@
 <!-- ============== FILTER SCRIPT EXAMPLE ============== -->
 <section class="section section-script">
   <div class="section-head reveal">
-    <span class="section-num">// 05</span>
+    <span class="section-num">// 06</span>
     <h2 class="section-title">Write your own filters.</h2>
     <p class="section-sub">Python-style expressions, sandboxed via AST whitelist. No imports, no exec, no system access. Just packet attributes and a few helpers.</p>
   </div>
@@ -664,7 +733,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== DESIGNS ============== -->
 <section class="section section-designs">
   <div class="section-head reveal">
-    <span class="section-num">// 06</span>
+    <span class="section-num">// 07</span>
     <h2 class="section-title">Pick your aesthetic.</h2>
     <p class="section-sub">Four base designs ship with Throttlr. Custom themes are a separate gallery — drop a theme file into the themes folder, restart, done. Switch any time from Settings → Appearance, no restart.</p>
   </div>
@@ -720,7 +789,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== CHANGELOG ============== -->
 <section class="section section-changelog" id="whatsnew">
   <div class="section-head reveal">
-    <span class="section-num">// 07</span>
+    <span class="section-num">// 08</span>
     <h2 class="section-title">What's new in <span data-auto-version>the latest release</span>.</h2>
     <p class="section-sub">Per-app speed test, real internet wizard, custom themes, system tray, hotkey reliability fixes, and more. <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">Full changelog on GitHub →</a></p>
   </div>
@@ -768,7 +837,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== FAQ ============== -->
 <section class="section section-faq" id="faq">
   <div class="section-head reveal">
-    <span class="section-num">// 08</span>
+    <span class="section-num">// 09</span>
     <h2 class="section-title">Frequently asked.</h2>
   </div>
   <div class="faq-list">
@@ -779,11 +848,12 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
     </details>
     <details class="faq-item reveal">
       <summary>Why does it need administrator privileges?</summary>
-      <p>WinDivert installs a kernel-mode driver to intercept packets before they hit your network adapter. Loading kernel drivers requires admin rights — there's no way around it. The included <code>run_as_admin.bat</code> handles this for you. If you'd rather elevate the .exe directly, right-click → "Run as administrator."</p>
+      <p>WinDivert installs a kernel-mode driver to intercept packets before they hit your network adapter. Loading kernel drivers requires admin rights — there's no way around it. The installer handles elevation at install time, and the launcher requests it on launch automatically. Just click "Yes" on the UAC prompt.</p>
     </details>
     <details class="faq-item reveal">
       <summary>Does it phone home? Any telemetry?</summary>
-      <p><strong>Zero.</strong> No analytics, no crash uploads, no version-check pings, no anything. Open the source — it's all there in <code>throttlr.py</code>. The only network traffic Throttlr generates is whatever you generate yourself with the app open.</p>
+      <p><strong>Zero.</strong> No analytics, no crash uploads, no anything sent to anyone. The only intentional outbound call Throttlr makes is the GitHub Releases check at launch (for auto-update), and that's a single anonymous GET to GitHub's public API. Even that can be turned off in Settings → Behavior → Auto-update.</p>
+      <p>The source isn't fully public anymore (Throttlr went closed-source at v3.0.8 to make piracy resilience meaningful), but the binary's network behaviour is easy to verify with any packet sniffer — run Wireshark on your machine, launch Throttlr, watch what it sends. It's exactly the GitHub check and nothing else.</p>
     </details>
     <details class="faq-item reveal">
       <summary>Can it throttle browser tabs individually?</summary>
@@ -832,8 +902,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
     </span>
   </a>
   <p class="cta-note reveal" style="--d: 0.3s">
-    Extract the zip. Run <code>run_as_admin.bat</code>.
-    WinDivert needs admin to intercept packets — that's the only friction.
+    Run the installer, click through the wizard. WinDivert needs admin rights to intercept packets — Throttlr's installer requests elevation once at install time and the launcher handles it on launch from there on.
   </p>
   <div class="cta-secondary reveal" style="--d: 0.4s">
     <a href="https://github.com/BillysMatrix18/throttlr-releases" target="_blank" rel="noopener">View on GitHub →</a>

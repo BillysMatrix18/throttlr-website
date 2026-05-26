@@ -2279,3 +2279,95 @@ body::before {
 .designs-cta a:hover {
   text-decoration-color: var(--hazard);
 }
+
+/* ============================================================
+ * v3.1.2 — POWER FEATURES SECTION
+ * Section // 04 — the major features beyond basic functions/tools
+ * (Profiles, Overlay, Automation, LAN sync, Studio, etc.)
+ *
+ * Two-column grid on desktop, single column on narrow screens.
+ * Each card has a small uppercase tag, a headline title, a
+ * descriptive paragraph, and a meta row of three chips.
+ * Styled distinctly from tool cards: warmer accent, larger
+ * headlines, denser meta row. These are the "big deal" features.
+ * ============================================================ */
+.section-power {
+  /* Sits between Tools and How-it-works. Inherits .section padding. */
+}
+.power-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+@media (max-width: 800px) {
+  .power-grid { grid-template-columns: 1fr; }
+}
+.power-card {
+  position: relative;
+  padding: 30px 26px 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255, 184, 0, 0.02) 0%, transparent 60%),
+    linear-gradient(180deg, #0d1010 0%, #07090a 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.power-card:hover {
+  border-color: rgba(255, 184, 0, 0.32);
+  transform: translateY(-2px);
+}
+.power-tag {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 4px 9px;
+  border-radius: 2px;
+  background: var(--hazard);
+  color: #07090a;
+}
+.power-title {
+  font-family: var(--font-stencil);
+  font-size: 22px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--bone);
+  margin: 0;
+}
+.power-card p {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--bone-2);
+  margin: 0;
+}
+.power-card p code {
+  font-size: 12px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(255, 184, 0, 0.08);
+  color: var(--hazard);
+}
+.power-meta {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.power-meta span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  padding: 4px 9px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--bone-2);
+  text-transform: uppercase;
+}
