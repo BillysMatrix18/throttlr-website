@@ -500,6 +500,20 @@
     </article>
     <article class="tool-card reveal">
       <header><span class="tool-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="20" cy="18" r="2" fill="currentColor"/></svg>
+      </span><h3>Live Packet Dump</h3></header>
+      <p>tcpdump-style live tail of every packet your targeted app sends or receives. Header preview, direction arrows, protocol tags, hostname (when SNI is visible). Pause, resume, filter by substring, auto-scroll. 5Hz polling stays smooth with bounded render.</p>
+      <div class="tool-meta"><span>5Hz refresh</span><span>Substring filter</span><span>Bounded render</span></div>
+    </article>
+    <article class="tool-card reveal">
+      <header><span class="tool-icon">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </span><h3>Test my Speed</h3></header>
+      <p>A full Cloudflare-based speed test. Measures latency + jitter (6 pings), then downloads 150MB and uploads 75MB with animated gauges. Final report grades your connection on a 15-tier ladder (Dial-up → Ridiculous) and shows ISP, public IP, geolocation, adapter, and DNS — all in one screen. Refuses to run while capture is active so throttle/lag don't skew results.</p>
+      <div class="tool-meta"><span>Cloudflare endpoints</span><span>15-tier verdict</span><span>Network details</span></div>
+    </article>
+    <article class="tool-card reveal">
+      <header><span class="tool-icon">
         <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       </span><h3>Filter Script</h3></header>
       <p>Write your own per-packet filter expressions in a Python-like DSL. Sandboxed via AST whitelist — no system access, no imports, no exec. Variables: <code>pkt.dst_port</code>, <code>pkt.host</code>, <code>pkt.size</code>, <code>pkt.country</code>, plus helpers like <code>endswith()</code> and <code>random()</code>.</p>
@@ -652,12 +666,12 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
   <div class="section-head reveal">
     <span class="section-num">// 06</span>
     <h2 class="section-title">Pick your aesthetic.</h2>
-    <p class="section-sub">Two base designs plus a growing roster of custom themes. Switch from Settings → Appearance, no restart. Drop your own theme files into the themes folder and they show up too.</p>
+    <p class="section-sub">Four base designs ship with Throttlr. Custom themes are a separate gallery — drop a theme file into the themes folder, restart, done. Switch any time from Settings → Appearance, no restart.</p>
   </div>
   <div class="designs-grid">
     <div class="design-card reveal">
       <div class="design-tag design-tag-industrial">INDUSTRIAL</div>
-      <p class="design-desc">Hazard yellow. Big Shoulders Stencil. CRT scanlines, hazard-tape dividers, sharp corner brackets. Built for the workshop aesthetic.</p>
+      <p class="design-desc">Hazard yellow on black. Big Shoulders Stencil. CRT scanlines, hazard-tape dividers, sharp corner brackets. The default — built for the workshop aesthetic.</p>
       <div class="design-mock design-mock-industrial">
         <div class="dm-header">
           <span class="dm-num">02</span>
@@ -671,7 +685,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
         </div>
       </div>
     </div>
-    <div class="design-card reveal" style="--d: 0.15s">
+    <div class="design-card reveal" style="--d: 0.1s">
       <div class="design-tag design-tag-midnight">MIDNIGHT</div>
       <p class="design-desc">Deep navy. Inter typeface. Glassmorphic surfaces, rounded corners, soft glows. <strong>Six accent variants</strong>: Aurora, Sunset, Forest, Amber, Rose, Ocean. Plus a custom HEX picker.</p>
       <div class="design-mock design-mock-midnight">
@@ -687,7 +701,18 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
         </div>
       </div>
     </div>
+    <div class="design-card reveal" style="--d: 0.2s">
+      <div class="design-tag design-tag-midnight">WINDOWS 7</div>
+      <p class="design-desc">Aero glass, cornflower blue, frosted titles. A nostalgic throwback for anyone who misses 2010. Looks especially good on widescreen monitors.</p>
+    </div>
+    <div class="design-card reveal" style="--d: 0.3s">
+      <div class="design-tag">OPTIMISED</div>
+      <p class="design-desc">Flat, fast, no animations. The minimal design for people who just want Throttlr to launch instantly and stay out of the way. Ideal for older or low-spec machines.</p>
+    </div>
   </div>
+  <p class="designs-cta reveal" style="--d: 0.4s">
+    Want something wilder? Custom themes (Retro, Cyberpunk, Frutiger Aero, Liquid Glass, Terminal, and more) live in a separate gallery — get them at <a href="https://throttlr-themes.netlify.app" target="_blank" rel="noopener">throttlr-themes.netlify.app</a> or open the themes folder right from Settings.
+  </p>
 </section>
 
 <div class="hazard-strip hazard-strip-thick"></div>

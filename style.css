@@ -2221,3 +2221,61 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== v3.1.2 — Windows 7 and Optimised design cards =====
+ * Third and fourth cards in the designs grid. The first two (Industrial,
+ * Midnight) keep their original :nth-child(1)/(2) styling. These get
+ * accent treatment via :nth-child(3) and :nth-child(4) selectors. */
+.design-card:nth-child(3) {
+  background: linear-gradient(180deg, #0e1830 0%, #07101e 100%);
+  border-color: rgba(132, 168, 220, 0.32);
+}
+.design-card:nth-child(3) .design-tag {
+  background: #84a8dc;
+  color: #07101e;
+}
+.design-card:nth-child(3) .design-desc {
+  color: rgba(220, 232, 250, 0.78);
+}
+.design-card:nth-child(3) .design-desc strong {
+  color: #84a8dc;
+}
+.design-card:nth-child(4) {
+  background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+  border-color: rgba(180, 180, 180, 0.20);
+}
+.design-card:nth-child(4) .design-tag {
+  background: rgba(220, 220, 220, 0.92);
+  color: #0a0a0a;
+}
+.design-card:nth-child(4) .design-desc {
+  color: rgba(200, 200, 200, 0.75);
+}
+.design-card:nth-child(4) .design-desc strong {
+  color: #d4d4d4;
+}
+
+/* CTA line below the designs grid pointing to the themes gallery */
+.designs-cta {
+  grid-column: 1 / -1;
+  margin-top: 22px;
+  padding: 16px 22px;
+  background: rgba(255, 184, 0, 0.04);
+  border: 1px solid rgba(255, 184, 0, 0.18);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--bone-2);
+  line-height: 1.6;
+  text-align: center;
+}
+.designs-cta a {
+  color: var(--hazard);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 184, 0, 0.4);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.designs-cta a:hover {
+  text-decoration-color: var(--hazard);
+}
