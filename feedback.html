@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Throttlr — Send feedback, report a bug, or suggest a feature.">
+  <meta name="theme-color" content="#ffb800">
+  <title>Throttlr — Feedback</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ============== TOP MARQUEE ============== -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>// FEEDBACK</span><span>•</span>
+    <span>BUGS / FEATURES / GENERAL</span><span>•</span>
+    <span>READ DIRECTLY BY THE DEV</span><span>•</span>
+    <span>// FEEDBACK</span><span>•</span>
+    <span>BUGS / FEATURES / GENERAL</span><span>•</span>
+    <span>READ DIRECTLY BY THE DEV</span><span>•</span>
+  </div>
+</div>
+
+<div class="hazard-strip"></div>
+
+<!-- ============== NAV ============== -->
+<header class="nav">
+  <a href="index.html" class="brand" aria-label="Throttlr home">
+    <span class="brand-bolt">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="brand-name">THROTTLR</span>
+    <span class="brand-tag">[ BY BILLY'S MATRIX ]</span>
+  </a>
+  <nav class="nav-links">
+    <a href="index.html#why">Why</a>
+    <a href="index.html#functions">Functions</a>
+    <a href="index.html#tools">Tools</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#faq">FAQ</a>
+    <a href="https://github.com/BillysMatrix18/throttlr-releases" class="nav-github" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.3-3.2-.1-.4-.6-1.6.1-3.2 0 0 1-.3 3.4 1.2a11.5 11.5 0 0 1 6 0c2.3-1.6 3.3-1.2 3.3-1.2.7 1.6.2 2.8.1 3.2.8.8 1.3 2 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.1.7.8.6A12 12 0 0 0 12 .3z"/></svg>
+      GitHub
+    </a>
+    <a href="https://github.com/BillysMatrix18/throttlr-releases/releases/latest/download/Throttlr-Setup.exe" class="nav-cta" download>Download</a>
+  </nav>
+</header>
+
+<!-- ============== FEEDBACK SECTION ============== -->
+<section class="section section-feedback" id="feedback">
+  <div class="section-head reveal">
+    <span class="section-num">// FEEDBACK</span>
+    <h2 class="section-title">Send feedback.</h2>
+    <p class="section-sub">
+      Found a bug, want a feature, or just want to say something? It goes
+      straight to the dev. Name and email are optional — leave them blank
+      to send anonymously, but include an email if you want a reply.
+    </p>
+  </div>
+
+  <div class="feedback-wrap reveal">
+    <form id="feedback-form" class="feedback-form" novalidate>
+      <!-- Honeypot — humans leave blank, bots fill it. Submission is dropped server-side if non-empty. -->
+      <div class="hp-field" aria-hidden="true">
+        <label>Don't fill this in <input type="text" name="hp_website" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+      <div class="ff-row ff-row-2">
+        <label class="ff-field">
+          <span class="ff-label">Name <em>(optional)</em></span>
+          <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Anonymous">
+        </label>
+        <label class="ff-field">
+          <span class="ff-label">Email <em>(optional — for a reply)</em></span>
+          <input type="email" name="email" maxlength="120" autocomplete="email" placeholder="you@example.com">
+        </label>
+      </div>
+
+      <div class="ff-field">
+        <span class="ff-label">Type</span>
+        <div class="ff-pill-group" role="radiogroup" aria-label="Feedback type">
+          <label class="ff-pill">
+            <input type="radio" name="type" value="bug" checked>
+            <span><span class="ff-pill-dot bug"></span> Bug report</span>
+          </label>
+          <label class="ff-pill">
+            <input type="radio" name="type" value="feature">
+            <span><span class="ff-pill-dot feature"></span> Feature request</span>
+          </label>
+          <label class="ff-pill">
+            <input type="radio" name="type" value="general">
+            <span><span class="ff-pill-dot general"></span> General</span>
+          </label>
+        </div>
+      </div>
+
+      <label class="ff-field">
+        <span class="ff-label">Your message <em>— required</em></span>
+        <textarea name="message" rows="8" maxlength="4000" required
+                  placeholder="What's on your mind? For bugs, include what you were doing, what went wrong, and (if you can) which version you're on."></textarea>
+        <span class="ff-count"><span id="ff-count-num">0</span> / 4000</span>
+      </label>
+
+      <div class="ff-actions">
+        <button type="submit" class="btn-hazard btn-hazard-lg" id="ff-submit">
+          <span class="btn-hazard-stripes"></span>
+          <span class="btn-hazard-text">SEND FEEDBACK</span>
+        </button>
+        <span class="ff-status" id="ff-status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <aside class="feedback-side">
+      <h3>What happens to this</h3>
+      <p>
+        Submissions land in a private Google Sheet that only Billy sees.
+        Nothing is shared, sold, or shown publicly. If you leave an email,
+        it's only used to reply — never added to anything.
+      </p>
+      <h3>Want a faster response?</h3>
+      <p>
+        For bugs you can reproduce, opening a GitHub issue helps me track
+        and fix it quicker.
+      </p>
+      <a class="feedback-side-link" href="https://github.com/BillysMatrix18/throttlr-releases/issues/new"
+         target="_blank" rel="noopener">Open a GitHub issue →</a>
+    </aside>
+  </div>
+</section>
+
+<div class="hazard-strip hazard-strip-thick"></div>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="brand-bolt">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg>
+      </span>
+      <strong>THROTTLR</strong>
+      <span>by Billy's Matrix</span>
+      <p class="footer-blurb">
+        Per-application network throttler for Windows. Drop, lag, throttle, freeze, block — all per-process.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>App</h4>
+      <a href="index.html#why">Why Throttlr</a>
+      <a href="index.html#functions">Functions</a>
+      <a href="index.html#tools">Tools</a>
+      <a href="index.html#how">How it works</a>
+      <a href="index.html#faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Links</h4>
+      <a href="https://github.com/BillysMatrix18/throttlr-releases" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/BillysMatrix18/throttlr-releases/issues" target="_blank" rel="noopener">Report a bug</a>
+      <a href="feedback.html">Feedback</a>
+      <a href="https://ko-fi.com/billysmatrix" target="_blank" rel="noopener">Support development</a>
+    </div>
+    <div class="footer-col">
+      <h4>Built with</h4>
+      <span>PySide6</span>
+      <span>QWebEngine</span>
+      <span>WinDivert</span>
+      <span>Python 3.10+</span>
+      <span>Lucide icons (MIT)</span>
+    </div>
+  </div>
+  <div class="footer-base">
+    <span>© 2026 Billy's Matrix.</span>
+    <span>Throttlr is not affiliated with any app you can throttle.</span>
+    <span>Use responsibly.</span>
+  </div>
+</footer>
+
+<div class="page-scanlines" aria-hidden="true"></div>
+
+<script>
+/* ============================================================
+   FEEDBACK FORM — submit handler
+   ------------------------------------------------------------
+   Posts the form fields to a Google Apps Script web app, which
+   appends a row to a private Google Sheet. We use mode:'no-cors'
+   so the browser doesn't need a CORS preflight (Apps Script's
+   CORS handling is finicky); the tradeoff is we can't read the
+   response, so we redirect on completion regardless. The script
+   itself runs the validation and silently drops bad submissions
+   (honeypot filled, empty message, etc.).
+   ============================================================ */
+
+// !!! REPLACE THIS WITH YOUR DEPLOYED APPS SCRIPT WEB-APP URL !!!
+// You'll get this URL after deploying the script (see FEEDBACK_SETUP.md).
+// It looks like: https://script.google.com/macros/s/AKfy.../exec
+const FEEDBACK_ENDPOINT = "REPLACE_WITH_YOUR_APPS_SCRIPT_URL";
+
+const form    = document.getElementById('feedback-form');
+const submit  = document.getElementById('ff-submit');
+const status  = document.getElementById('ff-status');
+const message = form.querySelector('textarea[name="message"]');
+const countEl = document.getElementById('ff-count-num');
+
+// Live character counter (just a quality-of-life thing)
+message.addEventListener('input', () => {
+  countEl.textContent = message.value.length;
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Client-side validation. Keep messages friendly + short.
+  const msg = message.value.trim();
+  if (msg.length < 8) {
+    status.textContent = "Add a few more words so I can actually act on it.";
+    status.className = 'ff-status err';
+    message.focus();
+    return;
+  }
+  const emailVal = form.querySelector('input[name="email"]').value.trim();
+  if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+    status.textContent = "That email doesn't look right. Leave blank to skip, or fix it.";
+    status.className = 'ff-status err';
+    form.querySelector('input[name="email"]').focus();
+    return;
+  }
+
+  // Disable + show progress so users don't double-submit
+  submit.disabled = true;
+  submit.classList.add('busy');
+  status.textContent = "Sending…";
+  status.className = 'ff-status';
+
+  // Build payload. Include a few client-side fields (page url, UTC time,
+  // user-agent) that are handy in the sheet but never asked for from the
+  // user. These are non-identifying browser strings.
+  const fd = new FormData(form);
+  fd.append('page', location.href);
+  fd.append('client_time', new Date().toISOString());
+  fd.append('user_agent',  navigator.userAgent.slice(0, 250));
+
+  try {
+    if (FEEDBACK_ENDPOINT.startsWith('REPLACE_')) {
+      // Defensive: don't actually POST to the placeholder URL.
+      throw new Error('Endpoint not configured yet.');
+    }
+    await fetch(FEEDBACK_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',     // opaque response — we don't read it
+      body: fd,
+    });
+    // We can't tell if the script succeeded (opaque response), but the
+    // POST always reaches the script in practice. Redirect to the thanks
+    // page; on the rare server-side failure the user can still re-submit
+    // if they hit back.
+    window.location.href = 'feedback-thanks.html';
+  } catch (err) {
+    submit.disabled = false;
+    submit.classList.remove('busy');
+    status.textContent = "Couldn't send — check your connection and try again.";
+    status.className = 'ff-status err';
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>

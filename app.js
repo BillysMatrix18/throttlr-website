@@ -140,7 +140,8 @@
     const dlEls = document.querySelectorAll(
       '.nav-cta, .btn-download, [data-auto-download]'
     );
-    if (!verEls.length && !dlEls.length) return;
+    const clAuto = document.querySelector('[data-cl-auto]');
+    if (!verEls.length && !dlEls.length && !clAuto) return;
     fetch('https://api.github.com/repos/BillysMatrix18/throttlr-releases/releases/latest', {
       headers: { 'Accept': 'application/vnd.github+json' }
     })
@@ -159,15 +160,103 @@
           const exes = data.assets.filter(function (a) {
             return /\.exe$/i.test(a.name) && a.browser_download_url;
           });
-          if (!exes.length) return;
-          // Prefer the installer (filename contains "Setup") over portable .exe
-          const installer = exes.find(function (a) {
-            return /setup/i.test(a.name);
-          }) || exes[0];
-          dlEls.forEach(function (el) {
-            el.setAttribute('href', installer.browser_download_url);
-          });
+          if (exes.length) {
+            const installer = exes.find(function (a) {
+              return /setup/i.test(a.name);
+            }) || exes[0];
+            dlEls.forEach(function (el) {
+              el.setAttribute('href', installer.browser_download_url);
+            });
+          }
+        }
+        // Job 3: changelog. Parse the release body (markdown) into
+        // NEW / FIXED / IMPROVED buckets and render them, so the
+        // "What's new" section updates itself every release — no manual
+        // edits. If parsing yields nothing, the hardcoded fallback stays.
+        if (clAuto && data.body) {
+          try { renderChangelogFromBody(data.body); }
+          catch (e) { /* keep fallback content */ }
         }
       })
-      .catch(function () { /* silent fail — static href fallback still works */ });
+      .catch(function () { /* silent fail — static content/href fallback works */ });
   })();
+
+  // Parse a GitHub release body (markdown) into the three changelog lists.
+  // Recognises section headers whose text contains "new", "fixed", or
+  // "improved" (case-insensitive) — works with "### ✨ New", "## Fixed",
+  // "**Improved**", etc. Also recognises inline category prefixes like
+  // "NEW · ...", "FIXED — ...", "IMPROVED: ..." on individual bullets, so
+  // either release-note style works. Bullets start with -, *, •, or ›.
+  function renderChangelogFromBody(body) {
+    const lines = String(body).replace(/\r/g, '').split('\n');
+    const buckets = { new: [], fixed: [], improved: [] };
+    let current = null;
+
+    // Strip markdown decoration from a line of text.
+    const clean = function (s) {
+      return s
+        .replace(/\*\*/g, '').replace(/__/g, '')      // bold
+        .replace(/`/g, '')                            // code ticks
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')      // [text](url) -> text
+        .replace(/[#>*_~]/g, '')                      // stray md chars
+        .trim();
+    };
+    // Which bucket does a header/category word map to?
+    const bucketOf = function (text) {
+      const t = text.toLowerCase();
+      if (/\bfix(ed|es)?\b/.test(t)) return 'fixed';
+      if (/\bimproved?\b|\bimprovement/.test(t)) return 'improved';
+      if (/\bnew\b|\badded\b|\bfeature/.test(t)) return 'new';
+      return null;
+    };
+
+    lines.forEach(function (raw) {
+      const line = raw.trim();
+      if (!line) return;
+      // Header line? (markdown # or a short bold/plain label line)
+      const headerMatch = line.match(/^#{1,6}\s*(.+)$/);
+      if (headerMatch) {
+        const b = bucketOf(clean(headerMatch[1]));
+        if (b) current = b;
+        return;
+      }
+      // Bullet line?
+      const bulletMatch = line.match(/^[-*•›]\s+(.+)$/);
+      if (bulletMatch) {
+        let text = clean(bulletMatch[1]);
+        // Inline category prefix? e.g. "NEW · ...", "FIXED — ..."
+        const pfx = text.match(/^(new|added|fixed|improved|improvement)\b[\s:·—–-]+(.+)$/i);
+        let target = current;
+        if (pfx) {
+          const b = bucketOf(pfx[1]);
+          if (b) { target = b; text = clean(pfx[2]); }
+        }
+        if (target && text) buckets[target].push(text);
+        return;
+      }
+    });
+
+    // Only proceed if we actually parsed some items.
+    const total = buckets.new.length + buckets.fixed.length + buckets.improved.length;
+    if (!total) return;
+
+    const fill = function (id, items) {
+      const ul = document.getElementById(id);
+      if (!ul) return;
+      if (!items.length) { ul.innerHTML = ''; return; }
+      ul.innerHTML = items.map(function (t) {
+        // Basic HTML-escape for safety since this is remote content.
+        const safe = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return '<li>' + safe + '</li>';
+      }).join('');
+    };
+    fill('cl-new-list', buckets.new);
+    fill('cl-fixed-list', buckets.fixed);
+    fill('cl-improved-list', buckets.improved);
+
+    // Hide the IMPROVED tag + list if there were none this release.
+    const impTag = document.getElementById('cl-improved-tag');
+    const impList = document.getElementById('cl-improved-list');
+    if (impTag) impTag.style.display = buckets.improved.length ? '' : 'none';
+    if (impList && !buckets.improved.length) impList.style.display = 'none';
+  }

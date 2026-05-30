@@ -2371,3 +2371,290 @@ body::before {
   color: var(--bone-2);
   text-transform: uppercase;
 }
+
+/* =====================================================================
+ * FEEDBACK PAGE
+ * Form fields styled to match the dark/hazard aesthetic of the rest of
+ * the site. Two-column layout on desktop (form + sidebar), stacks on
+ * narrow screens.
+ * ===================================================================== */
+
+.section-feedback {
+  padding-bottom: 80px;
+}
+
+.feedback-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 40px;
+  max-width: 1180px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+}
+@media (max-width: 900px) {
+  .feedback-wrap { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* --- Form container --- */
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 28px;
+  background: linear-gradient(180deg, rgba(255,184,0,0.04), rgba(255,184,0,0));
+  border: 1px solid rgba(255,184,0,0.18);
+  border-radius: 10px;
+}
+
+/* Honeypot — invisible to humans, visible to crude bots that fill every field */
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.ff-row { display: flex; gap: 16px; }
+.ff-row-2 > * { flex: 1 1 0; min-width: 0; }
+@media (max-width: 560px) {
+  .ff-row-2 { flex-direction: column; }
+}
+
+.ff-field { display: flex; flex-direction: column; gap: 7px; position: relative; }
+.ff-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffb800;
+}
+.ff-label em {
+  font-style: normal;
+  font-weight: 400;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+  margin-left: 6px;
+}
+
+.feedback-form input[type="text"],
+.feedback-form input[type="email"],
+.feedback-form textarea {
+  width: 100%;
+  background: #111;
+  color: #f5e8c8;
+  border: 1px solid rgba(255,184,0,0.25);
+  border-radius: 6px;
+  padding: 11px 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.feedback-form textarea {
+  resize: vertical;
+  min-height: 160px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.feedback-form input::placeholder,
+.feedback-form textarea::placeholder {
+  color: rgba(245,232,200,0.32);
+}
+.feedback-form input:focus,
+.feedback-form textarea:focus {
+  border-color: #ffb800;
+  box-shadow: 0 0 0 3px rgba(255,184,0,0.15);
+  background: #161616;
+}
+
+/* Live character counter under the textarea */
+.ff-count {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+
+/* --- Pill radio group for feedback type --- */
+.ff-pill-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ff-pill {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+.ff-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.ff-pill > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: #111;
+  border: 1px solid rgba(255,184,0,0.25);
+  border-radius: 999px;
+  color: rgba(245,232,200,0.8);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.16s ease;
+}
+.ff-pill:hover > span {
+  border-color: rgba(255,184,0,0.55);
+  color: #f5e8c8;
+}
+.ff-pill input:checked + span {
+  background: rgba(255,184,0,0.16);
+  border-color: #ffb800;
+  color: #ffb800;
+  box-shadow: 0 0 0 2px rgba(255,184,0,0.12);
+}
+.ff-pill-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  opacity: 0.85;
+}
+.ff-pill-dot.bug     { color: #ff4d6a; }
+.ff-pill-dot.feature { color: #66d9ef; }
+.ff-pill-dot.general { color: #a0e76c; }
+
+/* --- Actions row --- */
+.ff-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.ff-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.6);
+}
+.ff-status.err { color: #ff6b81; }
+.ff-status.ok  { color: #a0e76c; }
+
+/* Busy state on the submit button while in flight */
+#ff-submit.busy {
+  opacity: 0.7;
+  cursor: progress;
+}
+#ff-submit.busy .btn-hazard-text::after {
+  content: " …";
+}
+
+/* --- Sidebar --- */
+.feedback-side {
+  align-self: start;
+  padding: 24px;
+  background: rgba(20,20,20,0.5);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-left: 3px solid #ffb800;
+  border-radius: 6px;
+}
+.feedback-side h3 {
+  margin: 0 0 8px;
+  font-family: 'Big Shoulders Stencil', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffb800;
+  text-transform: uppercase;
+}
+.feedback-side h3:not(:first-child) {
+  margin-top: 22px;
+}
+.feedback-side p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(245,232,200,0.78);
+}
+.feedback-side-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffb800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,184,0,0.4);
+  padding-bottom: 1px;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.feedback-side-link:hover {
+  color: #ffd970;
+  border-bottom-color: #ffd970;
+}
+
+/* =====================================================================
+ * THANK-YOU PAGE
+ * ===================================================================== */
+.section-thanks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+  padding: 40px 24px;
+}
+.thanks-card {
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  padding: 48px 32px;
+  background: linear-gradient(180deg, rgba(255,184,0,0.04), rgba(0,0,0,0));
+  border: 1px solid rgba(255,184,0,0.20);
+  border-radius: 10px;
+  position: relative;
+}
+.thanks-bolt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px; height: 84px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: rgba(160, 231, 108, 0.12);
+  color: #a0e76c;
+  box-shadow: 0 0 0 1px rgba(160,231,108,0.35), 0 0 36px rgba(160,231,108,0.25);
+}
+.section-thanks .section-num {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #a0e76c;
+}
+.section-thanks .section-title {
+  margin: 4px 0 16px;
+}
+.thanks-body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(245,232,200,0.82);
+  margin: 0 0 28px;
+}
+.thanks-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.thanks-secondary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(245,232,200,0.6);
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+.thanks-secondary:hover { color: #ffb800; }

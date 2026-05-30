@@ -793,10 +793,10 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
     <h2 class="section-title">What's new in <span data-auto-version>the latest release</span>.</h2>
     <p class="section-sub">Per-app speed test, real internet wizard, custom themes, system tray, hotkey reliability fixes, and more. <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">Full changelog on GitHub →</a></p>
   </div>
-  <div class="changelog">
+  <div class="changelog" data-cl-auto>
     <div class="cl-col reveal">
       <div class="cl-tag cl-tag-new">+ NEW</div>
-      <ul>
+      <ul id="cl-new-list">
         <li>Test my Speed tool — Cloudflare-based latency, jitter, download, upload</li>
         <li>Real-internet test wizard with one-click "feel like 3G" presets</li>
         <li>Custom themes (Retro, Cyberpunk, Frutiger Aero, Liquid Glass, Terminal) + themes folder</li>
@@ -813,7 +813,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
     </div>
     <div class="cl-col reveal" style="--d: 0.1s">
       <div class="cl-tag cl-tag-fix">~ FIXED</div>
-      <ul>
+      <ul id="cl-fixed-list">
         <li>Global hotkeys now reliable system-wide on built .exe releases</li>
         <li>Hotkey watchdog re-installs hook every 30s if Windows yanks it</li>
         <li>Splash hang at 0% on some machines (CDN + duplicate-declaration bug)</li>
@@ -821,8 +821,8 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
         <li>Theme flicker when opening Settings while a custom theme was active</li>
         <li>Background-tone detection covers all theme-change paths now</li>
       </ul>
-      <div class="cl-tag cl-tag-new">~ IMPROVED</div>
-      <ul>
+      <div class="cl-tag cl-tag-new" id="cl-improved-tag">~ IMPROVED</div>
+      <ul id="cl-improved-list">
         <li>Lag drain loop sleeps adaptively to packet deadlines (less CPU, tighter timing)</li>
         <li>Hotkey conflict popup — explains when another app (Discord/OBS/Steam) has claimed your hotkey</li>
         <li>Per-app preset restore prompt now shows exactly what's about to be restored</li>
@@ -904,13 +904,6 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
   <p class="cta-note reveal" style="--d: 0.3s">
     Run the installer, click through the wizard. WinDivert needs admin rights to intercept packets — Throttlr's installer requests elevation once at install time and the launcher handles it on launch from there on.
   </p>
-  <div class="cta-secondary reveal" style="--d: 0.4s">
-    <a href="https://github.com/BillysMatrix18/throttlr-releases" target="_blank" rel="noopener">View on GitHub →</a>
-    <span class="cta-sep">·</span>
-    <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">All releases</a>
-    <span class="cta-sep">·</span>
-    <a href="#whatsnew">Changelog</a>
-  </div>
 </section>
 
 <div class="hazard-strip hazard-strip-thick"></div>
@@ -941,6 +934,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
       <a href="https://github.com/BillysMatrix18/throttlr-releases" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">Releases</a>
       <a href="https://github.com/BillysMatrix18/throttlr-releases/issues" target="_blank" rel="noopener">Report a bug</a>
+      <a href="feedback.html">Feedback</a>
       <a href="https://ko-fi.com/billysmatrix" target="_blank" rel="noopener">Support development</a>
     </div>
     <div class="footer-col">
