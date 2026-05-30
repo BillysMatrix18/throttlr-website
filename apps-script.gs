@@ -1,97 +1,55 @@
 /**
  * Throttlr — Feedback form receiver
  * ============================================================
- * Google Apps Script web app. Receives POSTs from the feedback
- * page on throttlr.netlify.app and appends one row per
- * submission to a Google Sheet you own.
+ * Receives POSTs from throttlr.netlify.app/feedback.html and
+ * appends each submission to a per-type tab in the Google Sheet:
+ *   "Bug", "Feature", "Feedback", "General"
+ * Tabs are created lazily on the first submission of each type.
  *
- * To deploy: see FEEDBACK_SETUP.md.
- *
- * Sheet columns (in this order — created automatically if missing):
+ * Sheet columns (created automatically on first row of each tab):
  *   timestamp | type | name | email | message | page | client_time | user_agent | ip_hint
- *
- * Spam handling:
- *   - Honeypot field "hp_website": if non-empty, silently drop.
- *   - Empty message or message under 8 chars: drop with 400.
- *   - Reasonable rate-limit headroom; Apps Script's own quotas
- *     prevent abusive volume.
  */
 
-// ---- Configuration ---------------------------------------------------
-// Leave SHEET_ID blank to use the spreadsheet this script is bound to
-// (if you created the script from Extensions → Apps Script inside a
-// Sheet). Otherwise paste the sheet's ID (the long string in its URL,
-// between /d/ and /edit).
+// Leave blank if this script is bound to the spreadsheet
+// (Extensions → Apps Script from inside the Sheet). Otherwise paste
+// the sheet's ID.
 const SHEET_ID = "";
 
-// Name of the tab inside the spreadsheet to write into. The script
-// creates the tab and the header row if they don't exist yet.
-const SHEET_TAB = "Feedback";
-
-// ----------------------------------------------------------------------
-
-/**
- * Main entry point. Apps Script calls this when the deployed web app
- * receives a POST request.
- */
 function doPost(e) {
   try {
-    // e.parameter is the parsed form fields (FormData from the website)
     const p = (e && e.parameter) || {};
 
-    // Honeypot — bots will fill this; humans never see it.
+    // Honeypot — silently drop bot submissions.
     if (p.hp_website && String(p.hp_website).trim() !== "") {
-      // Pretend success so the bot moves on.
       return _ok({ ignored: true });
     }
 
-    // Validate
     const message = String(p.message || "").trim();
-    if (message.length < 8) {
-      return _bad("Message too short.");
-    }
-    // Cap field sizes so a misbehaving client can't write huge rows.
-    const type    = _cap(String(p.type    || "general"), 32);
-    const name    = _cap(String(p.name    || ""),         200);
-    const email   = _cap(String(p.email   || ""),         200);
-    const page    = _cap(String(p.page    || ""),         500);
-    const clientT = _cap(String(p.client_time || ""),     64);
-    const ua      = _cap(String(p.user_agent  || ""),     300);
+    if (message.length < 8) return _bad("Message too short.");
+
+    const rawType = String(p.type || "general");
+    const safeType = ["bug", "feature", "feedback", "general"].indexOf(rawType) >= 0
+      ? rawType : "general";
+
+    const name    = _cap(String(p.name        || ""), 200);
+    const email   = _cap(String(p.email       || ""), 200);
+    const page    = _cap(String(p.page        || ""), 500);
+    const clientT = _cap(String(p.client_time || ""), 64);
+    const ua      = _cap(String(p.user_agent  || ""), 300);
     const msg     = _cap(message, 4000);
 
-    // Only allow the known types; anything else becomes "general"
-    const safeType = ["bug", "feature", "feedback", "general"].indexOf(type) >= 0 ? type : "general";
+    // Route each submission to its own tab. "bug" → tab "Bug", etc.
+    const tabName = safeType.charAt(0).toUpperCase() + safeType.slice(1);
+    const sheet = _getSheet(tabName);
+    sheet.appendRow([new Date(), safeType, name, email, msg, page, clientT, ua, ""]);
 
-    // Tiny IP hint: Apps Script doesn't expose the requester IP, but if
-    // you ever proxy through Cloudflare you can forward CF-Connecting-IP
-    // via a header — leaving this column for future use.
-    const ipHint = "";
-
-    const sheet = _getSheet();
-    sheet.appendRow([
-      new Date(),
-      safeType,
-      name,
-      email,
-      msg,
-      page,
-      clientT,
-      ua,
-      ipHint,
-    ]);
-
-    return _ok({ written: true });
+    return _ok({ written: true, tab: tabName });
   } catch (err) {
-    // Don't leak internals to the public; just log for the script owner.
     console.error("doPost failed", err);
     return _bad("Server error.");
   }
 }
 
-/**
- * Optional GET handler — opens this URL in a browser and you'll see a
- * tiny status page, useful for confirming the deployment is live.
- */
 function doGet() {
   return HtmlService.createHtmlOutput(
     "<html><body style='background:#0b0b0b;color:#ffb800;font-family:monospace;padding:24px'>" +
@@ -100,50 +58,40 @@ function doGet() {
   );
 }
 
-// ---- Internals -------------------------------------------------------
-
-function _getSheet() {
+function _getSheet(tabName) {
   const ss = SHEET_ID
     ? SpreadsheetApp.openById(SHEET_ID)
     : SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) {
-    throw new Error("No spreadsheet — set SHEET_ID or bind the script to a sheet.");
-  }
-  let sh = ss.getSheetByName(SHEET_TAB);
-  if (!sh) {
-    sh = ss.insertSheet(SHEET_TAB);
-  }
+  if (!ss) throw new Error("No spreadsheet bound.");
+  let sh = ss.getSheetByName(tabName);
+  if (!sh) sh = ss.insertSheet(tabName);
   if (sh.getLastRow() === 0) {
     sh.appendRow([
       "Timestamp", "Type", "Name", "Email", "Message",
       "Page", "Client time (UTC)", "User agent", "IP hint",
     ]);
-    // Bold + freeze the header row for nicer browsing
     sh.getRange(1, 1, 1, 9).setFontWeight("bold");
     sh.setFrozenRows(1);
-    // Reasonable column widths so the sheet is readable on first open
-    sh.setColumnWidth(1, 170);  // timestamp
-    sh.setColumnWidth(2, 80);   // type
-    sh.setColumnWidth(3, 140);  // name
-    sh.setColumnWidth(4, 200);  // email
-    sh.setColumnWidth(5, 520);  // message
+    sh.setColumnWidth(1, 170);
+    sh.setColumnWidth(2, 80);
+    sh.setColumnWidth(3, 140);
+    sh.setColumnWidth(4, 200);
+    sh.setColumnWidth(5, 520);
   }
   return sh;
 }
 
-function _cap(str, n) {
-  if (!str) return "";
-  return str.length > n ? str.substring(0, n) : str;
+function _cap(s, n) {
+  if (!s) return "";
+  return s.length > n ? s.substring(0, n) : s;
 }
-
-function _ok(payload) {
+function _ok(p) {
   return ContentService
-    .createTextOutput(JSON.stringify(Object.assign({ ok: true }, payload || {})))
+    .createTextOutput(JSON.stringify(Object.assign({ ok: true }, p || {})))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
-function _bad(reason) {
+function _bad(r) {
   return ContentService
-    .createTextOutput(JSON.stringify({ ok: false, error: reason }))
+    .createTextOutput(JSON.stringify({ ok: false, error: r }))
     .setMimeType(ContentService.MimeType.JSON);
 }
