@@ -63,71 +63,175 @@
     <h2 class="section-title">Send feedback.</h2>
     <p class="section-sub">
       Found a bug, want a feature, or just want to say something? It goes
-      straight to the dev. Name and email are optional — leave them blank
+      straight to the dev. Identification is optional — leave it blank
       to send anonymously, but include an email if you want a reply.
     </p>
   </div>
 
   <div class="feedback-wrap reveal">
-    <form id="feedback-form" class="feedback-form" novalidate>
-      <!-- Honeypot — humans leave blank, bots fill it. Submission is dropped server-side if non-empty. -->
+    <!-- Industrial intake terminal -->
+    <form id="feedback-form" class="ff-terminal" novalidate>
+      <!-- Transmission header strip — looks like a piece of comms equipment -->
+      <div class="ff-strip">
+        <span class="ff-strip-dot"></span>
+        <span class="ff-strip-label">// CHANNEL</span>
+        <span class="ff-strip-sep">▸</span>
+        <span class="ff-strip-name">FEEDBACK_INTAKE</span>
+        <span class="ff-strip-spacer"></span>
+        <span class="ff-strip-status">READY</span>
+        <span class="ff-strip-id" id="ff-strip-id">ID·––––</span>
+      </div>
+
+      <!-- Corner brackets on the terminal enclosure -->
+      <span class="ff-corner ff-corner-tl"></span>
+      <span class="ff-corner ff-corner-tr"></span>
+      <span class="ff-corner ff-corner-bl"></span>
+      <span class="ff-corner ff-corner-br"></span>
+
+      <!-- Honeypot — invisible to humans, visible to crude bots -->
       <div class="hp-field" aria-hidden="true">
         <label>Don't fill this in <input type="text" name="hp_website" tabindex="-1" autocomplete="off"></label>
       </div>
 
-      <div class="ff-row ff-row-2">
-        <label class="ff-field">
-          <span class="ff-label">Name <em>(optional)</em></span>
-          <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Anonymous">
-        </label>
-        <label class="ff-field">
-          <span class="ff-label">Email <em>(optional — for a reply)</em></span>
-          <input type="email" name="email" maxlength="120" autocomplete="email" placeholder="you@example.com">
-        </label>
-      </div>
-
-      <div class="ff-field">
-        <span class="ff-label">Type</span>
-        <div class="ff-pill-group" role="radiogroup" aria-label="Feedback type">
-          <label class="ff-pill">
-            <input type="radio" name="type" value="bug" checked>
-            <span><span class="ff-pill-dot bug"></span> Bug report</span>
+      <!-- // 01 IDENTIFICATION -->
+      <div class="ff-group">
+        <div class="ff-group-head">
+          <span class="ff-group-num">// 01</span>
+          <span class="ff-group-name">IDENTIFICATION</span>
+          <span class="ff-group-meta">— optional, anonymous OK</span>
+        </div>
+        <div class="ff-group-body ff-group-2col">
+          <label class="ff-input">
+            <span class="ff-input-label">CALLSIGN</span>
+            <span class="ff-input-wrap">
+              <span class="ff-prompt">▸</span>
+              <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="anonymous">
+              <span class="ff-input-bracket tl"></span>
+              <span class="ff-input-bracket tr"></span>
+              <span class="ff-input-bracket bl"></span>
+              <span class="ff-input-bracket br"></span>
+            </span>
           </label>
-          <label class="ff-pill">
-            <input type="radio" name="type" value="feature">
-            <span><span class="ff-pill-dot feature"></span> Feature request</span>
-          </label>
-          <label class="ff-pill">
-            <input type="radio" name="type" value="general">
-            <span><span class="ff-pill-dot general"></span> General</span>
+          <label class="ff-input">
+            <span class="ff-input-label">RETURN CHANNEL</span>
+            <span class="ff-input-wrap">
+              <span class="ff-prompt">▸</span>
+              <input type="email" name="email" maxlength="120" autocomplete="email" placeholder="you@example.com">
+              <span class="ff-input-bracket tl"></span>
+              <span class="ff-input-bracket tr"></span>
+              <span class="ff-input-bracket bl"></span>
+              <span class="ff-input-bracket br"></span>
+            </span>
           </label>
         </div>
       </div>
 
-      <label class="ff-field">
-        <span class="ff-label">Your message <em>— required</em></span>
-        <textarea name="message" rows="8" maxlength="4000" required
-                  placeholder="What's on your mind? For bugs, include what you were doing, what went wrong, and (if you can) which version you're on."></textarea>
-        <span class="ff-count"><span id="ff-count-num">0</span> / 4000</span>
-      </label>
+      <!-- // 02 CLASSIFICATION -->
+      <div class="ff-group">
+        <div class="ff-group-head">
+          <span class="ff-group-num">// 02</span>
+          <span class="ff-group-name">CLASSIFICATION</span>
+          <span class="ff-group-meta">— what is this transmission?</span>
+        </div>
+        <div class="ff-group-body">
+          <div class="ff-switch-bank" role="radiogroup" aria-label="Feedback type">
+            <label class="ff-switch" data-cat="bug">
+              <input type="radio" name="type" value="bug" checked>
+              <span class="ff-switch-inner">
+                <span class="ff-switch-dot"></span>
+                <span class="ff-switch-text">
+                  <span class="ff-switch-title">BUG REPORT</span>
+                  <span class="ff-switch-sub">something broke</span>
+                </span>
+                <span class="ff-switch-led"></span>
+              </span>
+            </label>
+            <label class="ff-switch" data-cat="feature">
+              <input type="radio" name="type" value="feature">
+              <span class="ff-switch-inner">
+                <span class="ff-switch-dot"></span>
+                <span class="ff-switch-text">
+                  <span class="ff-switch-title">FEATURE REQUEST</span>
+                  <span class="ff-switch-sub">add / change</span>
+                </span>
+                <span class="ff-switch-led"></span>
+              </span>
+            </label>
+            <label class="ff-switch" data-cat="general">
+              <input type="radio" name="type" value="general">
+              <span class="ff-switch-inner">
+                <span class="ff-switch-dot"></span>
+                <span class="ff-switch-text">
+                  <span class="ff-switch-title">GENERAL</span>
+                  <span class="ff-switch-sub">other</span>
+                </span>
+                <span class="ff-switch-led"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
 
-      <div class="ff-actions">
-        <button type="submit" class="btn-hazard btn-hazard-lg" id="ff-submit">
-          <span class="btn-hazard-stripes"></span>
-          <span class="btn-hazard-text">SEND FEEDBACK</span>
+      <!-- // 03 PAYLOAD -->
+      <div class="ff-group">
+        <div class="ff-group-head">
+          <span class="ff-group-num">// 03</span>
+          <span class="ff-group-name">PAYLOAD</span>
+          <span class="ff-group-meta">— required</span>
+        </div>
+        <div class="ff-group-body">
+          <label class="ff-textarea">
+            <span class="ff-textarea-hint">
+              <span class="ff-textarea-hint-prompt">$</span>
+              say it like you'd describe it to a teammate. for bugs, include what
+              you were doing and (if you can) which Throttlr version you're on.
+            </span>
+            <span class="ff-textarea-wrap">
+              <textarea name="message" rows="8" maxlength="4000" required
+                        placeholder="// type your message here..."></textarea>
+              <span class="ff-input-bracket tl"></span>
+              <span class="ff-input-bracket tr"></span>
+              <span class="ff-input-bracket bl"></span>
+              <span class="ff-input-bracket br"></span>
+            </span>
+            <span class="ff-textarea-foot">
+              <span class="ff-textarea-tag">MSG_BODY</span>
+              <span class="ff-count"><span id="ff-count-num">0</span> / 4000</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer with the actual transmit button + status -->
+      <div class="ff-foot">
+        <button type="submit" class="btn-download btn-download-feedback" id="ff-submit">
+          <span class="btn-download-arrow">▶</span>
+          <span class="btn-download-text">
+            <span class="btn-download-main">TRANSMIT FEEDBACK</span>
+            <span class="btn-download-meta">
+              <span class="btn-download-ver">SECURE</span>
+              <span class="btn-download-os">&middot; DIRECT TO DEV &middot; NO LOGS</span>
+            </span>
+          </span>
         </button>
         <span class="ff-status" id="ff-status" aria-live="polite"></span>
       </div>
     </form>
 
     <aside class="feedback-side">
-      <h3>What happens to this</h3>
+      <div class="feedback-side-head">
+        <span class="feedback-side-num">// INFO</span>
+        <h3>What happens to this</h3>
+      </div>
       <p>
         Submissions land in a private Google Sheet that only Billy sees.
         Nothing is shared, sold, or shown publicly. If you leave an email,
         it's only used to reply — never added to anything.
       </p>
-      <h3>Want a faster response?</h3>
+      <div class="feedback-side-head">
+        <span class="feedback-side-num">// FAST</span>
+        <h3>Want a faster response?</h3>
+      </div>
       <p>
         For bugs you can reproduce, opening a GitHub issue helps me track
         and fix it quicker.
@@ -215,6 +319,18 @@ const submit  = document.getElementById('ff-submit');
 const status  = document.getElementById('ff-status');
 const message = form.querySelector('textarea[name="message"]');
 const countEl = document.getElementById('ff-count-num');
+
+// Generate a pseudo-random transmission ID for the terminal header. Pure
+// flavor — not sent to the script. Makes the form feel like a piece of
+// comms equipment that just powered up.
+(function setStripId() {
+  const idEl = document.getElementById('ff-strip-id');
+  if (!idEl) return;
+  const hex = '0123456789ABCDEF';
+  let s = '';
+  for (let i = 0; i < 4; i++) s += hex[Math.floor(Math.random() * 16)];
+  idEl.textContent = 'ID·' + s;
+})();
 
 // Live character counter (just a quality-of-life thing)
 message.addEventListener('input', () => {

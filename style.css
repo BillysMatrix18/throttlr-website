@@ -2373,229 +2373,511 @@ body::before {
 }
 
 /* =====================================================================
- * FEEDBACK PAGE
- * Form fields styled to match the dark/hazard aesthetic of the rest of
- * the site. Two-column layout on desktop (form + sidebar), stacks on
- * narrow screens.
+ * FEEDBACK PAGE — INDUSTRIAL INTAKE TERMINAL
+ * Heavy industrial styling: numbered field groups like instrument-panel
+ * sections, monospace inputs with prompt glyphs and corner brackets that
+ * activate on focus, mode-switch type selectors, transmission-style
+ * header strip, and the real .btn-download chunky hazard button for
+ * submit. All colors use the existing design tokens.
  * ===================================================================== */
 
 .section-feedback {
   padding-bottom: 80px;
+  position: relative;
 }
 
 .feedback-wrap {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 40px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 36px;
   max-width: 1180px;
   margin: 24px auto 0;
   padding: 0 24px;
 }
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .feedback-wrap { grid-template-columns: 1fr; gap: 28px; }
 }
 
-/* --- Form container --- */
-.feedback-form {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  padding: 28px;
-  background: linear-gradient(180deg, rgba(255,184,0,0.04), rgba(255,184,0,0));
-  border: 1px solid rgba(255,184,0,0.18);
-  border-radius: 10px;
+/* --- Terminal enclosure ---------------------------------------------- */
+.ff-terminal {
+  position: relative;
+  padding: 0 28px 28px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255,184,0,0.06), transparent 70%),
+    linear-gradient(180deg, #0c0d0e 0%, #08090a 100%);
+  border: 1px solid rgba(255,184,0,0.22);
+  border-radius: 4px;
+  /* Subtle horizontal scan lines, very faint */
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.012) 0px,
+    rgba(255,255,255,0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
 }
-
-/* Honeypot — invisible to humans, visible to crude bots that fill every field */
-.hp-field {
+.ff-terminal::before {
+  /* Faint glow above the panel — like the equipment is warm */
+  content: "";
   position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  inset: -1px -1px auto -1px; height: 80px;
+  background: linear-gradient(180deg, rgba(255,184,0,0.10), transparent);
+  pointer-events: none;
+  border-radius: 4px 4px 0 0;
 }
 
-.ff-row { display: flex; gap: 16px; }
-.ff-row-2 > * { flex: 1 1 0; min-width: 0; }
-@media (max-width: 560px) {
-  .ff-row-2 { flex-direction: column; }
+/* Corner brackets on the terminal — yellow hazard tape look */
+.ff-corner {
+  position: absolute;
+  width: 22px; height: 22px;
+  border: 2px solid var(--hazard);
+  pointer-events: none;
 }
+.ff-corner-tl { top: -1px;    left: -1px;   border-right: 0; border-bottom: 0; }
+.ff-corner-tr { top: -1px;    right: -1px;  border-left: 0;  border-bottom: 0; }
+.ff-corner-bl { bottom: -1px; left: -1px;   border-right: 0; border-top: 0; }
+.ff-corner-br { bottom: -1px; right: -1px;  border-left: 0;  border-top: 0; }
 
-.ff-field { display: flex; flex-direction: column; gap: 7px; position: relative; }
-.ff-label {
+/* --- Transmission header strip --------------------------------------- */
+.ff-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 -28px 26px;
+  padding: 10px 28px;
+  background: linear-gradient(90deg, rgba(255,184,0,0.10), rgba(255,184,0,0.02));
+  border-bottom: 1px solid rgba(255,184,0,0.22);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ffb800;
+  color: rgba(255,184,0,0.85);
 }
-.ff-label em {
-  font-style: normal;
-  font-weight: 400;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.06em;
-  margin-left: 6px;
+.ff-strip-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #66e5b8;
+  box-shadow: 0 0 8px #66e5b8;
+  animation: ff-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ff-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+.ff-strip-sep { color: rgba(255,184,0,0.5); }
+.ff-strip-name { color: var(--hazard); }
+.ff-strip-spacer { flex: 1; }
+.ff-strip-status {
+  padding: 2px 8px;
+  background: rgba(102,229,184,0.12);
+  border: 1px solid rgba(102,229,184,0.35);
+  color: #66e5b8;
+  border-radius: 2px;
+  letter-spacing: 0.18em;
+}
+.ff-strip-id { color: rgba(232,230,216,0.45); }
+
+/* Honeypot stays invisible */
+.hp-field {
+  position: absolute; left: -10000px;
+  width: 1px; height: 1px; overflow: hidden;
 }
 
-.feedback-form input[type="text"],
-.feedback-form input[type="email"],
-.feedback-form textarea {
-  width: 100%;
-  background: #111;
-  color: #f5e8c8;
-  border: 1px solid rgba(255,184,0,0.25);
-  border-radius: 6px;
-  padding: 11px 13px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+/* --- Field groups (numbered like instrument panels) ------------------ */
+.ff-group {
+  margin-bottom: 28px;
 }
-.feedback-form textarea {
-  resize: vertical;
-  min-height: 160px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.feedback-form input::placeholder,
-.feedback-form textarea::placeholder {
-  color: rgba(245,232,200,0.32);
-}
-.feedback-form input:focus,
-.feedback-form textarea:focus {
-  border-color: #ffb800;
-  box-shadow: 0 0 0 3px rgba(255,184,0,0.15);
-  background: #161616;
-}
+.ff-group:last-of-type { margin-bottom: 0; }
 
-/* Live character counter under the textarea */
-.ff-count {
-  position: absolute;
-  right: 6px;
-  bottom: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  color: rgba(255,255,255,0.35);
-  pointer-events: none;
-}
-
-/* --- Pill radio group for feedback type --- */
-.ff-pill-group {
+.ff-group-head {
   display: flex;
-  gap: 10px;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255,184,0,0.22);
+  font-family: 'JetBrains Mono', monospace;
   flex-wrap: wrap;
 }
-.ff-pill {
-  position: relative;
-  cursor: pointer;
-  user-select: none;
+.ff-group-num {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--hazard);
 }
-.ff-pill input { position: absolute; opacity: 0; pointer-events: none; }
-.ff-pill > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  background: #111;
-  border: 1px solid rgba(255,184,0,0.25);
-  border-radius: 999px;
-  color: rgba(245,232,200,0.8);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: all 0.16s ease;
+.ff-group-name {
+  font-family: 'Big Shoulders Stencil', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+  text-transform: uppercase;
+  line-height: 1;
 }
-.ff-pill:hover > span {
-  border-color: rgba(255,184,0,0.55);
-  color: #f5e8c8;
+.ff-group-meta {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(232,230,216,0.45);
 }
-.ff-pill input:checked + span {
-  background: rgba(255,184,0,0.16);
-  border-color: #ffb800;
-  color: #ffb800;
-  box-shadow: 0 0 0 2px rgba(255,184,0,0.12);
-}
-.ff-pill-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 8px currentColor;
-  opacity: 0.85;
-}
-.ff-pill-dot.bug     { color: #ff4d6a; }
-.ff-pill-dot.feature { color: #66d9ef; }
-.ff-pill-dot.general { color: #a0e76c; }
 
-/* --- Actions row --- */
-.ff-actions {
+.ff-group-body { display: flex; flex-direction: column; gap: 14px; }
+.ff-group-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 620px) { .ff-group-2col { grid-template-columns: 1fr; } }
+
+/* --- Inputs (industrial terminal style) ------------------------------ */
+.ff-input { display: flex; flex-direction: column; gap: 6px; }
+.ff-input-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,184,0,0.75);
+}
+.ff-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #06070a;
+  border: 1px solid rgba(255,184,0,0.18);
+  border-radius: 2px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.ff-input-wrap:focus-within {
+  border-color: var(--hazard);
+  background: #0a0a0c;
+  box-shadow: 0 0 0 1px rgba(255,184,0,0.45), 0 0 24px rgba(255,184,0,0.10);
+}
+.ff-prompt {
+  flex: 0 0 auto;
+  padding-left: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hazard);
+  opacity: 0.7;
+}
+.ff-input-wrap:focus-within .ff-prompt { opacity: 1; }
+.ff-input-wrap input {
+  flex: 1 1 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 12px 12px 12px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: #f5e8c8;
+  letter-spacing: 0.02em;
+}
+.ff-input-wrap input::placeholder {
+  color: rgba(245,232,200,0.28);
+  font-style: italic;
+}
+/* Corner brackets inside each input — visible on focus */
+.ff-input-bracket {
+  position: absolute;
+  width: 8px; height: 8px;
+  border: 1.5px solid var(--hazard);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+.ff-input-bracket.tl { top: -1px;    left: -1px;   border-right: 0; border-bottom: 0; }
+.ff-input-bracket.tr { top: -1px;    right: -1px;  border-left: 0;  border-bottom: 0; }
+.ff-input-bracket.bl { bottom: -1px; left: -1px;   border-right: 0; border-top: 0; }
+.ff-input-bracket.br { bottom: -1px; right: -1px;  border-left: 0;  border-top: 0; }
+.ff-input-wrap:focus-within .ff-input-bracket { opacity: 1; }
+
+/* --- Mode-switch bank (type selector) -------------------------------- */
+.ff-switch-bank {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 620px) { .ff-switch-bank { grid-template-columns: 1fr; } }
+
+.ff-switch { cursor: pointer; user-select: none; }
+.ff-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.ff-switch-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  background: #07090a;
+  border: 1px solid rgba(255,184,0,0.20);
+  border-radius: 2px;
+  transition: all 0.18s ease;
+  overflow: hidden;
+}
+.ff-switch-inner::before {
+  /* Faint diagonal hazard texture for unselected, becomes visible on hover */
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0, transparent 8px,
+    rgba(255,184,0,0.04) 8px, rgba(255,184,0,0.04) 10px
+  );
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+.ff-switch:hover .ff-switch-inner {
+  border-color: rgba(255,184,0,0.55);
+  background: #0a0c0e;
+}
+.ff-switch:hover .ff-switch-inner::before { opacity: 1; }
+
+/* The category dot — color per category */
+.ff-switch-dot {
+  flex: 0 0 auto;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.06);
+  opacity: 0.5;
+  transition: opacity 0.18s ease, box-shadow 0.18s ease;
+}
+.ff-switch[data-cat="bug"]     { color: #ff4d6a; }
+.ff-switch[data-cat="feature"] { color: #66ddff; }
+.ff-switch[data-cat="general"] { color: #a0e76c; }
+
+.ff-switch-text { flex: 1 1 0; display: flex; flex-direction: column; line-height: 1.1; }
+.ff-switch-title {
+  font-family: 'Big Shoulders Stencil', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: rgba(232,230,216,0.7);
+  text-transform: uppercase;
+  transition: color 0.18s ease;
+}
+.ff-switch-sub {
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: rgba(232,230,216,0.35);
+}
+
+/* The LED on the right — off / armed / lit */
+.ff-switch-led {
+  flex: 0 0 auto;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+  transition: all 0.18s ease;
+}
+
+/* Selected state */
+.ff-switch input:checked + .ff-switch-inner {
+  background: linear-gradient(180deg, rgba(255,184,0,0.10), rgba(255,184,0,0.04));
+  border-color: var(--hazard);
+  box-shadow: 0 0 0 1px var(--hazard), 0 0 18px rgba(255,184,0,0.18);
+}
+.ff-switch input:checked + .ff-switch-inner::before { opacity: 1; }
+.ff-switch input:checked + .ff-switch-inner .ff-switch-dot {
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(255,184,0,0.18), 0 0 10px currentColor;
+}
+.ff-switch input:checked + .ff-switch-inner .ff-switch-title { color: var(--hazard); }
+.ff-switch input:checked + .ff-switch-inner .ff-switch-led {
+  background: var(--hazard);
+  box-shadow: 0 0 8px var(--hazard), 0 0 14px rgba(255,184,0,0.5);
+  animation: ff-pulse 1.6s ease-in-out infinite;
+}
+
+/* --- Textarea (the "payload" panel) ---------------------------------- */
+.ff-textarea { display: flex; flex-direction: column; gap: 10px; }
+.ff-textarea-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  background: rgba(255,184,0,0.04);
+  border-left: 2px solid rgba(255,184,0,0.5);
+  border-radius: 1px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(232,230,216,0.65);
+}
+.ff-textarea-hint-prompt {
+  flex: 0 0 auto;
+  color: var(--hazard);
+  font-weight: 700;
+}
+.ff-textarea-wrap {
+  position: relative;
+  background: #06070a;
+  border: 1px solid rgba(255,184,0,0.18);
+  border-radius: 2px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.ff-textarea-wrap:focus-within {
+  border-color: var(--hazard);
+  background: #0a0a0c;
+  box-shadow: 0 0 0 1px rgba(255,184,0,0.45), 0 0 24px rgba(255,184,0,0.10);
+}
+.ff-textarea-wrap textarea {
+  width: 100%;
+  min-height: 180px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 14px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #f5e8c8;
+  resize: vertical;
+  letter-spacing: 0.01em;
+}
+.ff-textarea-wrap textarea::placeholder {
+  color: rgba(245,232,200,0.28);
+  font-style: italic;
+}
+.ff-textarea-wrap .ff-input-bracket { opacity: 0; transition: opacity 0.18s ease; }
+.ff-textarea-wrap:focus-within .ff-input-bracket { opacity: 1; }
+
+.ff-textarea-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ff-textarea-tag {
+  padding: 2px 7px;
+  background: rgba(255,184,0,0.08);
+  border: 1px solid rgba(255,184,0,0.3);
+  color: var(--hazard);
+  font-weight: 700;
+  border-radius: 2px;
+}
+.ff-count {
+  color: rgba(232,230,216,0.4);
+  font-weight: 600;
+}
+
+/* --- Footer (submit button + status) --------------------------------- */
+.ff-foot {
   display: flex;
   align-items: center;
   gap: 18px;
-  margin-top: 8px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,184,0,0.22);
   flex-wrap: wrap;
 }
+/* Use the real .btn-download style but a bit roomier for the form */
+.btn-download-feedback {
+  /* btn-download already styles this; we just slightly adjust */
+  min-width: 320px;
+}
+.btn-download-feedback.busy {
+  opacity: 0.75;
+  cursor: progress;
+}
+.btn-download-feedback.busy .btn-download-main::after { content: " …"; }
+
 .ff-status {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12.5px;
-  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.04em;
+  color: rgba(232,230,216,0.55);
 }
 .ff-status.err { color: #ff6b81; }
 .ff-status.ok  { color: #a0e76c; }
 
-/* Busy state on the submit button while in flight */
-#ff-submit.busy {
-  opacity: 0.7;
-  cursor: progress;
-}
-#ff-submit.busy .btn-hazard-text::after {
-  content: " …";
-}
-
-/* --- Sidebar --- */
+/* --- Sidebar (info panel) -------------------------------------------- */
 .feedback-side {
   align-self: start;
-  padding: 24px;
-  background: rgba(20,20,20,0.5);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-left: 3px solid #ffb800;
-  border-radius: 6px;
+  padding: 22px 22px 24px;
+  background: linear-gradient(180deg, rgba(20,20,20,0.55), rgba(8,8,9,0.55));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-left: 3px solid var(--hazard);
+  border-radius: 2px;
+  position: relative;
+}
+.feedback-side::before {
+  /* same faint scanline texture */
+  content: "";
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.013) 0px,
+    rgba(255,255,255,0.013) 1px,
+    transparent 1px, transparent 3px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+.feedback-side-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-top: 18px;
+}
+.feedback-side-head:first-child { margin-top: 0; }
+.feedback-side-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--hazard);
 }
 .feedback-side h3 {
-  margin: 0 0 8px;
+  margin: 0;
   font-family: 'Big Shoulders Stencil', sans-serif;
   font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #ffb800;
+  letter-spacing: 0.05em;
+  color: var(--bone);
   text-transform: uppercase;
-}
-.feedback-side h3:not(:first-child) {
-  margin-top: 22px;
+  line-height: 1;
 }
 .feedback-side p {
-  margin: 0;
-  font-size: 13.5px;
+  margin: 8px 0 0;
+  font-size: 13px;
   line-height: 1.65;
-  color: rgba(245,232,200,0.78);
+  color: rgba(232,230,216,0.7);
+  position: relative;
 }
 .feedback-side-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-top: 14px;
+  padding: 7px 11px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #ffb800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hazard);
   text-decoration: none;
-  border-bottom: 1px solid rgba(255,184,0,0.4);
-  padding-bottom: 1px;
-  transition: border-color 0.18s ease, color 0.18s ease;
+  border: 1px solid rgba(255,184,0,0.4);
+  border-radius: 2px;
+  transition: all 0.16s ease;
+  position: relative;
 }
 .feedback-side-link:hover {
-  color: #ffd970;
-  border-bottom-color: #ffd970;
+  color: #0b0b0b;
+  background: var(--hazard);
+  border-color: var(--hazard);
 }
+
 
 /* =====================================================================
  * THANK-YOU PAGE
