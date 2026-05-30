@@ -3013,7 +3013,11 @@ body::before {
  * Cursor spotlight removed per Billy's request.
  * ===================================================================== */
 
-/* --- Base body: neutral dark gradient (no global yellow tint) -------- */
+/* --- Base body: neutral dark gradient (no global yellow tint) --------
+ * v4.2 — REMOVED the blueprint grid from body bg. The grid is now its own
+ * fixed PARALLAX element (.parallax-grid) that translates at its own
+ * scroll speed for a visible 3D depth effect. body bg keeps the vertical
+ * gradient + vignette + a faint cyan whisper. */
 body {
   background-color: #0a0b0d;
   background-image:
@@ -3021,77 +3025,95 @@ body {
     radial-gradient(140% 110% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%),
     /* A cool cyan whisper in the lower-right of the viewport */
     radial-gradient(circle at 88% 92%, rgba(102, 217, 255, 0.025) 0%, transparent 45%),
-    /* Blueprint grid — very subtle technical pattern */
-    linear-gradient(rgba(180, 180, 200, 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 180, 200, 0.012) 1px, transparent 1px),
-    linear-gradient(rgba(180, 180, 200, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 180, 200, 0.022) 1px, transparent 1px),
     /* Base vertical gradient — top is slightly lighter, bottom near-black */
     linear-gradient(180deg, #0e1014 0%, #0a0b0d 35%, #06070a 70%, #050608 100%);
-  background-size:
-    100% 100%, 100% 100%,
-    40px 40px, 40px 40px,
-    200px 200px, 200px 200px,
-    100% 100%;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed;
   background-position: 0 0;
 }
 
-/* --- Hero-zone overlay: a yellow ambient glow that's only visible at the
- * top of the page. We attach it to body::before (we already have ::before
- * for the film grain, so we use a NEW fixed div .hero-zone-glow below
- * instead — added in the HTML). */
+/* v4.2 — Parallax blueprint grid. Fixed to viewport, background-position
+ * shifts based on scroll so the grid lines visibly LAG behind as you
+ * scroll — clear 3D depth effect. The bg-position-y offset is the magic:
+ * scroll 500px → grid shifts -200px (40% of scroll), so content scrolls
+ * at 100% while the grid scrolls at 60%. Visible parallax. */
+.parallax-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background-image:
+    /* Minor grid lines */
+    linear-gradient(rgba(180, 180, 200, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 180, 200, 0.018) 1px, transparent 1px),
+    /* Major grid lines */
+    linear-gradient(rgba(180, 180, 200, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 180, 200, 0.045) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
+  /* Parallax — shift background-position-y based on scroll. Negative
+   * value pushes the pattern UP as user scrolls down. Multiplier 0.4
+   * means grid moves at 40% of scroll speed → visible "lag" depth. */
+  background-position-y: calc(var(--scroll-y, 0px) * -0.4);
+  background-position-x: 0;
+  will-change: background-position;
+  /* Fade edges so grid lines don't cut sharply at viewport corners */
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 30%, transparent 100%);
+}
+
+/* --- Hero-zone yellow ambient glow. Fixed; fades out by ~600px scroll. */
 .hero-zone-glow {
   position: fixed;
   inset: 0;
-  z-index: -1;            /* behind content, above body bg */
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(circle at 18% 12%, rgba(255, 184, 0, 0.18) 0%, transparent 38%),
     radial-gradient(circle at 80% 8%,  rgba(255, 184, 0, 0.10) 0%, transparent 40%),
     radial-gradient(circle at 50% 0%,  rgba(255, 184, 0, 0.08) 0%, transparent 30%);
-  /* Fade out as the page scrolls past the hero. --scroll-y is set by JS in px.
-   * At scroll=0 → opacity 1. At scroll=~600px → opacity 0. linear fade. */
   opacity: clamp(0, calc(1 - var(--scroll-y, 0px) / 600px), 1);
-  will-change: opacity;
+  will-change: opacity, transform;
+  /* Slight parallax on the glow itself — gives the warm-zone its own depth */
+  transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.25), 0);
 }
 
-/* --- Animated ambient orbs with scroll-driven parallax -------------- */
+/* --- Ambient orbs — MORE VISIBLE parallax now. Bigger movement, bigger
+ *     orbs, slightly less blur so the translation is actually perceptible. */
 .bg-orbs {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
   overflow: hidden;
-  /* PARALLAX: translate the container UP slowly as user scrolls down.
-   * The fraction (here -0.18) controls how much "depth" the orbs have. */
-  transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.18), 0);
+  /* PARALLAX — bumped from -0.18 to -0.55 for a clearly visible effect. */
+  transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.55), 0);
   will-change: transform;
 }
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.55;
+  /* Less blur so the orb is actually visible as a shape (was 90px) */
+  filter: blur(70px);
+  opacity: 0.7;
   will-change: transform;
 }
 .bg-orb-1 {
-  top: -8%;  left: -6%;
-  width: 620px; height: 620px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.22), transparent 65%);
+  top: -6%;  left: -4%;
+  width: 680px; height: 680px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.28), transparent 65%);
   animation: orb-drift-1 32s ease-in-out infinite;
 }
 .bg-orb-2 {
-  /* This one sits FURTHER down the page so it shows after the hero */
-  top: 90vh; right: -8%;
-  width: 540px; height: 540px;
-  background: radial-gradient(circle, rgba(102, 217, 255, 0.13), transparent 65%);
+  /* Lower on page so it scrolls into view */
+  top: 110vh; right: -6%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(102, 217, 255, 0.18), transparent 65%);
   animation: orb-drift-2 38s ease-in-out infinite;
 }
 .bg-orb-3 {
-  top: 50vh; left: 30%;
-  width: 460px; height: 460px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.06), transparent 65%);
+  top: 240vh; left: 25%;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 65%);
   animation: orb-drift-3 46s ease-in-out infinite;
 }
 @keyframes orb-drift-1 {
@@ -3433,33 +3455,26 @@ body {
 /* =====================================================================
  * v4.1 — Final CTA card — distinct dark "container" so it stands apart
  * from the rest of the page and reads as a "ready, go now" zone.
+ * v4.2 — Removed the yellow horizontal borders (the hazard strips
+ * already do that job). Tone down the corner-bracket glow.
  * ===================================================================== */
 .cta-final {
-  /* Existing styles handle layout; we add a richer card-like background */
   position: relative;
   background:
-    /* Center spotlight glow drawing focus to the download button */
     radial-gradient(ellipse 50% 60% at 50% 55%,
                     rgba(255, 184, 0, 0.10) 0%,
                     transparent 70%),
-    /* Subtle inner-darkening for contrast against the page */
     radial-gradient(140% 90% at 50% 50%, transparent 30%, rgba(0,0,0,0.45) 100%),
-    /* Base dark gradient — DARKER than the page bg so it pops as separate */
     linear-gradient(180deg, #07080a 0%, #04050700 50%, #07080a 100%),
-    /* Soft layered dark fill */
     #050608;
-  border-top: 1px solid rgba(255, 184, 0, 0.25);
-  border-bottom: 1px solid rgba(255, 184, 0, 0.25);
-  padding-top: 90px !important;
-  padding-bottom: 90px !important;
-  /* A subtle inner shadow so the panel reads as recessed */
+  padding-top: 100px !important;
+  padding-bottom: 100px !important;
   box-shadow:
     inset 0 30px 60px rgba(0, 0, 0, 0.55),
     inset 0 -30px 60px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
-/* Subtle scanline + grid texture only inside the CTA so it feels like a
- * different surface from the rest of the page */
+/* Subtle interior texture — only inside the CTA */
 .cta-final::before {
   content: '';
   position: absolute;
@@ -3475,12 +3490,11 @@ body {
   mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
 }
-/* Corner brackets get a glow so they read as a real frame */
+/* Corner brackets — keep them visible but DROP the glow. Subtle, clean. */
 .cta-final .corner {
-  border-color: var(--hazard);
-  box-shadow: 0 0 12px rgba(255, 184, 0, 0.3);
+  border-color: rgba(255, 184, 0, 0.55);
+  box-shadow: none;
 }
-/* The download button itself gets stronger glow inside the CTA */
 .cta-final .btn-download-final {
   box-shadow:
     0 8px 30px rgba(255, 184, 0, 0.28),

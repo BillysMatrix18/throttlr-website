@@ -29,10 +29,12 @@
   <div class="bg-orb bg-orb-3"></div>
 </div>
 
-<!-- v4.1 — Hero-zone yellow ambient glow. Fixed-position overlay that's
-     fully opaque while we're near the top of the page (so the hero feels
-     warm and rich) and fades out as the user scrolls past it. CSS uses
-     the --scroll-y variable from app.js to drive the opacity. -->
+<!-- v4.2 — Parallax blueprint grid. Translates at a SLOWER rate than scroll
+     for the 3D depth effect — the grid lines visibly lag behind as you
+     scroll, making the page feel layered rather than flat. -->
+<div class="parallax-grid" aria-hidden="true"></div>
+
+<!-- v4.1 — Hero-zone yellow ambient glow. Fades out as scrolled past. -->
 <div class="hero-zone-glow" aria-hidden="true"></div>
 
 <!-- Scroll progress indicator -->
