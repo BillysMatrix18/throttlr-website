@@ -3030,33 +3030,40 @@ body {
   background-position: 0 0;
 }
 
-/* v4.2 — Parallax blueprint grid. Fixed to viewport, background-position
- * shifts based on scroll so the grid lines visibly LAG behind as you
- * scroll — clear 3D depth effect. The bg-position-y offset is the magic:
- * scroll 500px → grid shifts -200px (40% of scroll), so content scrolls
- * at 100% while the grid scrolls at 60%. Visible parallax. */
+/* v4.5 — Parallax blueprint grid (now actually visible).
+ * Grid squares clearly readable, with intersection dots at major
+ * grid crossings for that engineering-blueprint feel. Still parallax-
+ * scrolling at 40% speed for depth. */
 .parallax-grid {
   position: fixed;
   inset: 0;
   z-index: -3;
   pointer-events: none;
   background-image:
-    /* Minor grid lines */
-    linear-gradient(rgba(180, 180, 200, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 180, 200, 0.018) 1px, transparent 1px),
-    /* Major grid lines */
-    linear-gradient(rgba(180, 180, 200, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 180, 200, 0.045) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
-  /* Parallax — shift background-position-y based on scroll. Negative
-   * value pushes the pattern UP as user scrolls down. Multiplier 0.4
-   * means grid moves at 40% of scroll speed → visible "lag" depth. */
+    /* Intersection dots at major (200px) grid crossings — small bright
+     * accents that read as "blueprint markers". 2px circle, faint glow. */
+    radial-gradient(circle 2px at 1px 1px, rgba(220, 220, 230, 0.18) 100%, transparent 100%),
+    /* Minor grid lines (40px) — clearly visible now */
+    linear-gradient(rgba(200, 200, 215, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 200, 215, 0.045) 1px, transparent 1px),
+    /* Major grid lines (200px) — brighter, more structural */
+    linear-gradient(rgba(220, 220, 230, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220, 220, 230, 0.14) 1px, transparent 1px),
+    /* Extra-major grid (1000px) — biggest squares, brightest lines so the
+     * page reads as having multi-level hierarchy */
+    linear-gradient(rgba(255, 220, 130, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 220, 130, 0.10) 1px, transparent 1px);
+  background-size:
+    200px 200px,                /* intersection dots */
+    40px 40px, 40px 40px,        /* minor grid */
+    200px 200px, 200px 200px,    /* major grid */
+    1000px 1000px, 1000px 1000px;/* extra-major grid */
   background-position-y: calc(var(--scroll-y, 0px) * -0.4);
   background-position-x: 0;
   will-change: background-position;
-  /* Fade edges so grid lines don't cut sharply at viewport corners */
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 30%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 30%, transparent 100%);
+  /* Soft fade at edges so grid lines don't read as hard viewport edges */
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, #000 35%, transparent 100%);
 }
 
 /* --- Hero-zone yellow ambient glow. Fixed; fades out by ~600px scroll. */
