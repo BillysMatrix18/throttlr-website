@@ -68,30 +68,6 @@
     </p>
   </div>
 
-  <!-- Cooldown panel — shown when the user has submitted in the last 60s.
-       JS toggles between this and .feedback-wrap based on localStorage. -->
-  <div class="ff-cooldown reveal" id="ff-cooldown" hidden>
-    <span class="ff-corner ff-corner-tl"></span>
-    <span class="ff-corner ff-corner-tr"></span>
-    <span class="ff-corner ff-corner-bl"></span>
-    <span class="ff-corner ff-corner-br"></span>
-
-    <div class="ff-cd-label">// COOLDOWN</div>
-    <div class="ff-cd-time" id="ff-cd-time">01:00</div>
-    <div class="ff-cd-progress" aria-hidden="true">
-      <div class="ff-cd-progress-fill" id="ff-cd-fill"></div>
-    </div>
-    <div class="ff-cd-sub">
-      Feedback sent. You can send another in
-      <span id="ff-cd-readable">60</span> seconds.
-    </div>
-    <div class="ff-cd-foot">
-      Urgent bug?
-      <a href="https://github.com/BillysMatrix18/throttlr-releases/issues/new"
-         target="_blank" rel="noopener">Open a GitHub issue →</a>
-    </div>
-  </div>
-
   <div class="feedback-wrap reveal" id="ff-wrap">
     <!-- Industrial intake terminal -->
     <form id="feedback-form" class="ff-terminal" novalidate>
@@ -336,11 +312,15 @@ const message = form.querySelector('textarea[name="message"]');
 const countEl = document.getElementById('ff-count-num');
 
 /* ============================================================
-   PER-BROWSER COOLDOWN
+   PER-BROWSER COOLDOWN — button-state version
    ------------------------------------------------------------
-   After a submission, we stash the timestamp in localStorage and
-   refuse new submissions for COOLDOWN_MS. While the cooldown is
-   active, the form is hidden and a countdown panel is shown.
+   After a submission, we stash the timestamp in localStorage.
+   While the cooldown is active, the SEND FEEDBACK button turns
+   red and shows the remaining time, ticking down once a second;
+   it's disabled so it can't be clicked. The rest of the form
+   stays visible and editable. When the timer hits 0, the button
+   restores to its normal yellow state.
+
    Cooldown is per-browser (localStorage scope) — incognito or a
    different device won't carry it. That's intentional: this is a
    friendly rate-limit to prevent double-clicks and casual spam,
@@ -348,17 +328,20 @@ const countEl = document.getElementById('ff-count-num');
    ============================================================ */
 const COOLDOWN_MS  = 60 * 1000;
 const STORAGE_KEY  = 'throttlr_feedback_lastSubmit';
-const cdEl         = document.getElementById('ff-cooldown');
-const cdTimeEl     = document.getElementById('ff-cd-time');
-const cdFillEl     = document.getElementById('ff-cd-fill');
-const cdReadableEl = document.getElementById('ff-cd-readable');
-const wrapEl       = document.getElementById('ff-wrap');
-let cdInterval = null;
+
+// References to the button's text nodes so we can swap them during cooldown
+const btnArrowEl = submit.querySelector('.btn-download-arrow');
+const btnMainEl  = submit.querySelector('.btn-download-main');
+const btnSubEl   = submit.querySelector('.btn-download-ver');
+const btnOrigArrow = btnArrowEl ? btnArrowEl.textContent : '\u25B6';
+const btnOrigMain  = btnMainEl  ? btnMainEl.textContent  : 'SEND FEEDBACK';
+const btnOrigSub   = btnSubEl   ? btnSubEl.textContent   : 'DIRECT TO BILLY';
+let btnCdInterval = null;
 
 function cdRemainingMs() {
   let last = 0;
   try { last = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) || 0; }
-  catch (e) { /* private mode etc. — just allow */ return 0; }
+  catch (e) { return 0; }
   if (!last) return 0;
   const remaining = COOLDOWN_MS - (Date.now() - last);
   // Treat a future timestamp (clock weirdness) as expired so users aren't stuck.
@@ -372,40 +355,35 @@ function cdFormat(ms) {
   return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
-function cdTick() {
+function btnCdTick() {
   const remaining = cdRemainingMs();
-  cdTimeEl.textContent = cdFormat(remaining);
-  cdReadableEl.textContent = Math.ceil(remaining / 1000);
-  // Progress bar empties as time runs out
-  cdFillEl.style.width = ((remaining / COOLDOWN_MS) * 100) + '%';
-  if (remaining <= 0) {
-    if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
-    cdHide();
-  }
+  if (remaining <= 0) { btnCooldownEnd(); return; }
+  if (btnMainEl) btnMainEl.textContent = 'WAIT \u2014 ' + cdFormat(remaining);
+  if (btnSubEl)  btnSubEl.textContent  = 'COOLDOWN ACTIVE';
 }
 
-function cdShow() {
-  // Hide the form/sidebar, show the cooldown panel.
-  if (wrapEl) wrapEl.hidden = true;
-  cdEl.hidden = false;
-  // Trigger the .reveal fade-in for the cooldown card.
-  requestAnimationFrame(() => cdEl.classList.add('is-visible'));
-  cdTick();
-  if (!cdInterval) cdInterval = setInterval(cdTick, 250);
+function btnCooldownStart() {
+  if (btnCdInterval) return;             // already in cooldown mode
+  submit.classList.add('cooldown');
+  submit.disabled = true;
+  if (btnArrowEl) btnArrowEl.textContent = '\u23F1';   // ⏱
+  btnCdTick();                            // paint immediately, no 1s gap
+  btnCdInterval = setInterval(btnCdTick, 250);
 }
 
-function cdHide() {
-  cdEl.hidden = true;
-  cdEl.classList.remove('is-visible');
-  if (wrapEl) {
-    wrapEl.hidden = false;
-    // Make sure the wrap fades in cleanly when cooldown ends mid-session.
-    requestAnimationFrame(() => wrapEl.classList.add('is-visible'));
-  }
+function btnCooldownEnd() {
+  if (btnCdInterval) { clearInterval(btnCdInterval); btnCdInterval = null; }
+  submit.classList.remove('cooldown');
+  submit.disabled = false;
+  if (btnArrowEl) btnArrowEl.textContent = btnOrigArrow;
+  if (btnMainEl)  btnMainEl.textContent  = btnOrigMain;
+  if (btnSubEl)   btnSubEl.textContent   = btnOrigSub;
 }
 
-// On page load: if a cooldown is in flight, show the panel instead of the form.
-if (cdRemainingMs() > 0) cdShow();
+// On page load: if a cooldown is in flight, kick the button into its
+// red countdown state immediately. The form stays visible and editable
+// — only the submit button is locked until the timer hits 0.
+if (cdRemainingMs() > 0) btnCooldownStart();
 
 // Live character counter (just a quality-of-life thing)
 message.addEventListener('input', () => {
@@ -416,9 +394,9 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   // Defensive cooldown check — page might be stale (user kept the tab open
-  // through a previous submit + countdown). Refuse and show the panel.
+  // through a previous submit + countdown). Lock the button and refuse.
   if (cdRemainingMs() > 0) {
-    cdShow();
+    btnCooldownStart();
     return;
   }
 
