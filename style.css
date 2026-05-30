@@ -2401,7 +2401,10 @@ body::before {
 /* --- Terminal enclosure ---------------------------------------------- */
 .ff-terminal {
   position: relative;
-  padding: 0 28px 28px;
+  /* All-around generous padding now that the top strip is gone. Previously
+   * top was 0 so the strip could span edge-to-edge; without the strip the
+   * first group head was jammed against the corner-bracketed border. */
+  padding: 32px 28px 28px;
   background:
     radial-gradient(120% 80% at 50% 0%, rgba(255,184,0,0.06), transparent 70%),
     linear-gradient(180deg, #0c0d0e 0%, #08090a 100%);
