@@ -59,8 +59,8 @@ function doPost(e) {
     const ua      = _cap(String(p.user_agent  || ""),     300);
     const msg     = _cap(message, 4000);
 
-    // Only allow the three known types; anything else becomes "general"
-    const safeType = ["bug", "feature", "general"].indexOf(type) >= 0 ? type : "general";
+    // Only allow the known types; anything else becomes "general"
+    const safeType = ["bug", "feature", "feedback", "general"].indexOf(type) >= 0 ? type : "general";
 
     // Tiny IP hint: Apps Script doesn't expose the requester IP, but if
     // you ever proxy through Cloudflare you can forward CF-Connecting-IP
