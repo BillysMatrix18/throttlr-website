@@ -31,14 +31,35 @@
   updateProgress();
 
   // ---- Reveal-on-scroll ----
-  // Adds .is-visible to .reveal elements when they enter viewport.
-  // Delays are set inline via --d CSS variable.
+  // v4 — uses anime.js (if available) for a smooth spring fade-up.
+  // Falls back to the original .is-visible class toggle if anime isn't
+  // loaded (e.g. CDN fail) — the CSS-only path keeps the page working.
   const revealEls = document.querySelectorAll('.reveal');
+  const hasAnime = typeof window.anime !== 'undefined' && window.anime &&
+                   (window.anime.animate || window.anime.default);
+  const animeAnimate = hasAnime
+    ? (window.anime.animate || window.anime.default && window.anime.default.animate)
+    : null;
+
+  function revealEl(el) {
+    el.classList.add('is-visible');
+    if (animeAnimate) {
+      try {
+        animeAnimate(el, {
+          translateY: [28, 0],
+          opacity: [0, 1],
+          duration: 900,
+          ease: 'out(3)',  // anime v4 easing string
+        });
+      } catch (e) { /* CSS fallback already applied via .is-visible */ }
+    }
+  }
+
   if ('IntersectionObserver' in window && revealEls.length) {
     const io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
+          revealEl(entry.target);
           io.unobserve(entry.target);
         }
       });
@@ -89,6 +110,138 @@
       });
     }, { threshold: 0.5 });
     counterEls.forEach(function (el) { counterIO.observe(el); });
+  }
+
+  // ---- v4: Cursor spotlight ----
+  // A soft yellow glow follows the mouse on desktop. The element is in
+  // the DOM as #cursorSpot; we just translate it via transform on rAF.
+  // On touch / narrow viewports the element is display:none in CSS.
+  const spot = document.getElementById('cursorSpot');
+  const isDesktopPointer = window.matchMedia('(min-width: 900px) and (pointer: fine)').matches;
+  if (spot && isDesktopPointer) {
+    let sx = window.innerWidth / 2;
+    let sy = window.innerHeight / 2;
+    let tx = sx, ty = sy;
+    let raf = false;
+    const tickSpot = function () {
+      // Easing — lag the spotlight behind the cursor for a smooth feel
+      sx += (tx - sx) * 0.18;
+      sy += (ty - sy) * 0.18;
+      spot.style.transform = 'translate3d(' + sx + 'px,' + sy + 'px,0) translate(-50%,-50%)';
+      // Update the body background spotlight tint too (subtler)
+      document.body.style.setProperty('--spot-x', sx + 'px');
+      document.body.style.setProperty('--spot-y', sy + 'px');
+      // Continue animating while we're still easing toward target
+      if (Math.abs(tx - sx) > 0.5 || Math.abs(ty - sy) > 0.5) {
+        window.requestAnimationFrame(tickSpot);
+      } else {
+        raf = false;
+      }
+    };
+    window.addEventListener('mousemove', function (e) {
+      tx = e.clientX; ty = e.clientY;
+      if (!spot.classList.contains('is-active')) spot.classList.add('is-active');
+      if (!raf) {
+        raf = true;
+        window.requestAnimationFrame(tickSpot);
+      }
+    }, { passive: true });
+    window.addEventListener('mouseleave', function () {
+      spot.classList.remove('is-active');
+    });
+  }
+
+  // ---- v4: 3D Card tilt with cursor-following glow ----
+  // Cards in .usecase / .tool-card / .power-card / .design-card / .faq-item
+  // get a subtle rotateX/rotateY that tracks the cursor, plus a radial
+  // glow on the surface (CSS variables --mx/--my drive a ::after gradient).
+  // Touch devices skip this entirely — rotation interferes with scrolling.
+  const tiltSelector = '.usecase, .tool-card, .power-card, .design-card, .faq-item';
+  if (isDesktopPointer) {
+    document.querySelectorAll(tiltSelector).forEach(function (card) {
+      let rect = null;
+      let rafTilt = false;
+      let mx = 0, my = 0;
+
+      const updateTilt = function () {
+        if (!rect) return;
+        // Position within card, 0..1
+        const px = (mx - rect.left) / rect.width;
+        const py = (my - rect.top) / rect.height;
+        // Rotation amount — gentle (max ~6deg)
+        const rotY = (px - 0.5) * 8;      // left/right
+        const rotX = (0.5 - py) * 6;      // up/down
+        card.style.transform =
+          'perspective(900px) rotateX(' + rotX.toFixed(2) + 'deg) ' +
+          'rotateY(' + rotY.toFixed(2) + 'deg)';
+        // Glow position — % within card for the ::after radial-gradient
+        card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        rafTilt = false;
+      };
+
+      card.addEventListener('mouseenter', function () {
+        rect = card.getBoundingClientRect();
+        card.classList.add('is-tilting');
+      });
+      card.addEventListener('mousemove', function (e) {
+        mx = e.clientX; my = e.clientY;
+        if (!rafTilt) {
+          rafTilt = true;
+          window.requestAnimationFrame(updateTilt);
+        }
+      }, { passive: true });
+      card.addEventListener('mouseleave', function () {
+        card.classList.remove('is-tilting');
+        card.style.transform = '';
+        rect = null;
+      });
+    });
+  }
+
+  // ---- v4: Magnetic buttons ----
+  // .nav-cta / .btn-download / .btn-secondary get a subtle pull-toward-cursor
+  // effect: the button translates ~12px toward the cursor when the mouse is
+  // within a small radius. Springs back when the cursor leaves.
+  if (isDesktopPointer) {
+    const magnetSelector = '.nav-cta, .btn-download, .btn-secondary';
+    document.querySelectorAll(magnetSelector).forEach(function (btn) {
+      let rect = null;
+      let rafM = false;
+      let mx = 0, my = 0;
+
+      const updateMagnet = function () {
+        if (!rect) return;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        // Distance from center, normalized to half the button's longest dim
+        const dx = (mx - cx);
+        const dy = (my - cy);
+        // Pull strength — keep it gentle so it doesn't feel jumpy
+        const strength = 0.22;
+        btn.style.transform =
+          'translate3d(' + (dx * strength).toFixed(1) + 'px,' +
+                            (dy * strength).toFixed(1) + 'px,0)';
+        rafM = false;
+      };
+
+      btn.addEventListener('mouseenter', function () {
+        rect = btn.getBoundingClientRect();
+        btn.classList.add('is-magnetic');
+      });
+      btn.addEventListener('mousemove', function (e) {
+        mx = e.clientX; my = e.clientY;
+        if (!rafM) {
+          rafM = true;
+          window.requestAnimationFrame(updateMagnet);
+        }
+      }, { passive: true });
+      btn.addEventListener('mouseleave', function () {
+        btn.classList.remove('is-magnetic');
+        btn.style.transform = '';
+        rect = null;
+      });
+    });
   }
 
   // ---- Subtle parallax on hero mock ----

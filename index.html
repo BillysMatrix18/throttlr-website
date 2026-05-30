@@ -21,6 +21,18 @@
 </head>
 <body>
 
+<!-- v4 — Animated ambient background orbs (real DOM elements so they can
+     animate). Sits behind content via z-index: -1 in CSS. -->
+<div class="bg-orbs" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+</div>
+
+<!-- v4 — Cursor spotlight. Desktop-only soft yellow glow that follows
+     the mouse via JS (translate3d). Hidden on touch / mobile via CSS. -->
+<div class="cursor-spotlight" id="cursorSpot" aria-hidden="true"></div>
+
 <!-- Scroll progress indicator -->
 <div class="scroll-progress" id="scrollProgress"></div>
 
@@ -955,6 +967,10 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 
 <div class="page-scanlines" aria-hidden="true"></div>
 
+<!-- v4 — Anime.js for the 3D card tilt, magnetic buttons, scroll reveals
+     and the cursor spotlight. Same v4.4.1 UMD build shipped in the desktop
+     app, so behaviour matches what users see in Throttlr itself. -->
+<script src="anime.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

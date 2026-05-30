@@ -3000,3 +3000,234 @@ body::before {
   transition: color 0.18s ease;
 }
 .thanks-secondary:hover { color: #ffb800; }
+
+
+/* =====================================================================
+ * v4 — VISUAL UPGRADE
+ * Layered background depth, blueprint grid, ambient orbs, cursor
+ * spotlight, 3D card tilt, magnetic buttons, polished link underlines.
+ * Everything below is additive over the base styles.
+ * ===================================================================== */
+
+/* --- Background: layered gradients + blueprint grid ----------------- */
+body {
+  /* Falling back to a dark base color underneath the gradient stack */
+  background-color: #08090b;
+  background-image:
+    /* Mouse spotlight on body — softly tinted yellow, follows the cursor.
+     * The actual high-contrast spotlight is a separate .cursor-spotlight
+     * element with mix-blend-mode; this body-level tint is the gentle
+     * background warmth. */
+    radial-gradient(800px circle at var(--spot-x, 50vw) var(--spot-y, 8vh),
+                    rgba(255, 184, 0, 0.055),
+                    transparent 60%),
+    /* Vignette — darkens the edges for depth */
+    radial-gradient(140% 110% at 50% 50%,
+                    transparent 35%,
+                    rgba(0, 0, 0, 0.55) 100%),
+    /* Soft ambient glows, fixed in place */
+    radial-gradient(circle at 22% 14%, rgba(255, 184, 0, 0.07) 0%, transparent 38%),
+    radial-gradient(circle at 84% 80%, rgba(102, 217, 255, 0.035) 0%, transparent 42%),
+    radial-gradient(circle at 60% 28%, rgba(255, 184, 0, 0.03) 0%, transparent 32%),
+    /* Blueprint grid — extremely subtle technical pattern, gives the
+     * background "structure" without dominating. Mask is via fade-to-black
+     * at the edges (vignette overlap softens the grid at corners). */
+    linear-gradient(rgba(255, 184, 0, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 184, 0, 0.022) 1px, transparent 1px),
+    /* Larger grid for hierarchy */
+    linear-gradient(rgba(255, 184, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 184, 0, 0.04) 1px, transparent 1px),
+    /* Base vertical gradient — gray top, near-black bottom */
+    linear-gradient(180deg, #101214 0%, #0a0b0d 35%, #06070a 75%, #050607 100%);
+  background-size:
+    100% 100%,                 /* spotlight */
+    100% 100%,                 /* vignette */
+    100% 100%, 100% 100%, 100% 100%,  /* ambient orbs */
+    40px 40px, 40px 40px,      /* minor grid */
+    200px 200px, 200px 200px,  /* major grid */
+    100% 100%;                 /* base */
+  background-attachment: fixed;
+  background-position: 0 0;
+}
+
+/* Slow-drifting animated orbs — real DOM elements so we can animate them.
+ * Sits BEHIND content (z-index: -1) but ABOVE body background. */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.bg-orb-1 {
+  top: -8%;
+  left: -6%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.20), transparent 65%);
+  animation: orb-drift-1 32s ease-in-out infinite;
+}
+.bg-orb-2 {
+  bottom: -12%;
+  right: -8%;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(102, 217, 255, 0.13), transparent 65%);
+  animation: orb-drift-2 38s ease-in-out infinite;
+}
+.bg-orb-3 {
+  top: 45%;
+  left: 35%;
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 65%);
+  animation: orb-drift-3 46s ease-in-out infinite;
+}
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0, 0); }
+  33%      { transform: translate(140px, 90px); }
+  66%      { transform: translate(-70px, 180px); }
+}
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0, 0); }
+  33%      { transform: translate(-170px, -100px); }
+  66%      { transform: translate(80px, -220px); }
+}
+@keyframes orb-drift-3 {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-130px, -90px); }
+}
+
+/* Cursor spotlight — soft yellow glow that follows the mouse on desktop */
+.cursor-spotlight {
+  position: fixed;
+  top: 0; left: 0;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 60%);
+  pointer-events: none;
+  z-index: 3;
+  transform: translate3d(-50%, -50%, 0);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  mix-blend-mode: screen;
+  will-change: transform, left, top;
+}
+.cursor-spotlight.is-active { opacity: 1; }
+@media (max-width: 900px), (pointer: coarse) {
+  .cursor-spotlight { display: none; }
+}
+
+/* --- 3D Card tilt ---------------------------------------------------- */
+/* Cards get position:relative (most already have it) so the glow pseudo
+ * works. The transform is applied via JS via inline style. */
+.usecase, .tool-card, .power-card, .design-card, .faq-item {
+  position: relative;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  will-change: transform;
+}
+.usecase.is-tilting, .tool-card.is-tilting, .power-card.is-tilting,
+.design-card.is-tilting, .faq-item.is-tilting {
+  transition: transform 0.06s linear, border-color 0.3s ease, box-shadow 0.3s ease;
+  z-index: 5;
+}
+/* Glow that follows the cursor across the card surface. Controlled by
+ * --mx/--my CSS variables set in JS from mouse position. */
+.usecase::after, .tool-card::after, .power-card::after,
+.design-card::after, .faq-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 184, 0, 0.14),
+    transparent 38%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+.usecase.is-tilting::after, .tool-card.is-tilting::after,
+.power-card.is-tilting::after, .design-card.is-tilting::after,
+.faq-item.is-tilting::after {
+  opacity: 1;
+}
+/* Make sure card content stays above the glow pseudo */
+.usecase > *, .tool-card > *, .power-card > *,
+.design-card > *, .faq-item > * {
+  position: relative;
+  z-index: 2;
+}
+/* Borders brighten + add a soft shadow when hovering — adds to the lift */
+.usecase:hover, .tool-card:hover, .power-card:hover,
+.design-card:hover, .faq-item:hover {
+  border-color: rgba(255, 184, 0, 0.42);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.6),
+    0 0 36px rgba(255, 184, 0, 0.08);
+}
+
+/* --- Magnetic buttons (translate via inline style from JS) ----------- */
+.nav-cta, .btn-download, .btn-secondary {
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.25s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+  will-change: transform;
+}
+.nav-cta.is-magnetic, .btn-download.is-magnetic, .btn-secondary.is-magnetic {
+  transition: transform 0.06s linear,
+              box-shadow 0.25s ease,
+              background-color 0.2s ease,
+              color 0.2s ease;
+}
+
+/* --- Polished link underline animation ------------------------------- */
+.section-sub a, .faq-a a {
+  position: relative;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.3s ease;
+}
+.section-sub a:hover, .faq-a a:hover {
+  background-size: 100% 1px;
+}
+
+/* --- Heading "shine" sweep on hover --------------------------------- */
+/* Adds a subtle moving gloss across major section titles when hovered */
+.section-title {
+  background: linear-gradient(
+    100deg,
+    var(--bone) 0%,
+    var(--bone) 40%,
+    var(--hazard-2) 50%,
+    var(--bone) 60%,
+    var(--bone) 100%
+  );
+  background-size: 200% 100%;
+  background-position: -100% 0;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 0.9s ease;
+}
+.section-title:hover {
+  background-position: 200% 0;
+}

@@ -15,6 +15,16 @@
 </head>
 <body>
 
+<!-- v4 — Animated ambient background orbs -->
+<div class="bg-orbs" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+</div>
+
+<!-- v4 — Cursor spotlight (desktop only) -->
+<div class="cursor-spotlight" id="cursorSpot" aria-hidden="true"></div>
+
 <div class="scroll-progress" id="scrollProgress"></div>
 
 <!-- ============== TOP MARQUEE ============== -->
@@ -284,7 +294,9 @@
 
 <!-- v3.1.2 — Include site-wide app.js for the scroll-reveal logic that
      un-hides .reveal elements (and auto-version / download wiring).
-     Without this the entire feedback form stays at opacity:0. -->
+     Without this the entire feedback form stays at opacity:0.
+     v4 — anime.js precedes app.js for the magnetic / tilt / spotlight FX. -->
+<script src="anime.min.js"></script>
 <script src="app.js"></script>
 
 <script>
