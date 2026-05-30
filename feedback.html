@@ -68,7 +68,31 @@
     </p>
   </div>
 
-  <div class="feedback-wrap reveal">
+  <!-- Cooldown panel — shown when the user has submitted in the last 60s.
+       JS toggles between this and .feedback-wrap based on localStorage. -->
+  <div class="ff-cooldown reveal" id="ff-cooldown" hidden>
+    <span class="ff-corner ff-corner-tl"></span>
+    <span class="ff-corner ff-corner-tr"></span>
+    <span class="ff-corner ff-corner-bl"></span>
+    <span class="ff-corner ff-corner-br"></span>
+
+    <div class="ff-cd-label">// COOLDOWN</div>
+    <div class="ff-cd-time" id="ff-cd-time">01:00</div>
+    <div class="ff-cd-progress" aria-hidden="true">
+      <div class="ff-cd-progress-fill" id="ff-cd-fill"></div>
+    </div>
+    <div class="ff-cd-sub">
+      Feedback sent. You can send another in
+      <span id="ff-cd-readable">60</span> seconds.
+    </div>
+    <div class="ff-cd-foot">
+      Urgent bug?
+      <a href="https://github.com/BillysMatrix18/throttlr-releases/issues/new"
+         target="_blank" rel="noopener">Open a GitHub issue →</a>
+    </div>
+  </div>
+
+  <div class="feedback-wrap reveal" id="ff-wrap">
     <!-- Industrial intake terminal -->
     <form id="feedback-form" class="ff-terminal" novalidate>
       <!-- Corner brackets on the terminal enclosure -->
@@ -311,6 +335,78 @@ const status  = document.getElementById('ff-status');
 const message = form.querySelector('textarea[name="message"]');
 const countEl = document.getElementById('ff-count-num');
 
+/* ============================================================
+   PER-BROWSER COOLDOWN
+   ------------------------------------------------------------
+   After a submission, we stash the timestamp in localStorage and
+   refuse new submissions for COOLDOWN_MS. While the cooldown is
+   active, the form is hidden and a countdown panel is shown.
+   Cooldown is per-browser (localStorage scope) — incognito or a
+   different device won't carry it. That's intentional: this is a
+   friendly rate-limit to prevent double-clicks and casual spam,
+   not a security control.
+   ============================================================ */
+const COOLDOWN_MS  = 60 * 1000;
+const STORAGE_KEY  = 'throttlr_feedback_lastSubmit';
+const cdEl         = document.getElementById('ff-cooldown');
+const cdTimeEl     = document.getElementById('ff-cd-time');
+const cdFillEl     = document.getElementById('ff-cd-fill');
+const cdReadableEl = document.getElementById('ff-cd-readable');
+const wrapEl       = document.getElementById('ff-wrap');
+let cdInterval = null;
+
+function cdRemainingMs() {
+  let last = 0;
+  try { last = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) || 0; }
+  catch (e) { /* private mode etc. — just allow */ return 0; }
+  if (!last) return 0;
+  const remaining = COOLDOWN_MS - (Date.now() - last);
+  // Treat a future timestamp (clock weirdness) as expired so users aren't stuck.
+  return remaining > 0 && remaining <= COOLDOWN_MS ? remaining : 0;
+}
+
+function cdFormat(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function cdTick() {
+  const remaining = cdRemainingMs();
+  cdTimeEl.textContent = cdFormat(remaining);
+  cdReadableEl.textContent = Math.ceil(remaining / 1000);
+  // Progress bar empties as time runs out
+  cdFillEl.style.width = ((remaining / COOLDOWN_MS) * 100) + '%';
+  if (remaining <= 0) {
+    if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+    cdHide();
+  }
+}
+
+function cdShow() {
+  // Hide the form/sidebar, show the cooldown panel.
+  if (wrapEl) wrapEl.hidden = true;
+  cdEl.hidden = false;
+  // Trigger the .reveal fade-in for the cooldown card.
+  requestAnimationFrame(() => cdEl.classList.add('is-visible'));
+  cdTick();
+  if (!cdInterval) cdInterval = setInterval(cdTick, 250);
+}
+
+function cdHide() {
+  cdEl.hidden = true;
+  cdEl.classList.remove('is-visible');
+  if (wrapEl) {
+    wrapEl.hidden = false;
+    // Make sure the wrap fades in cleanly when cooldown ends mid-session.
+    requestAnimationFrame(() => wrapEl.classList.add('is-visible'));
+  }
+}
+
+// On page load: if a cooldown is in flight, show the panel instead of the form.
+if (cdRemainingMs() > 0) cdShow();
+
 // Live character counter (just a quality-of-life thing)
 message.addEventListener('input', () => {
   countEl.textContent = message.value.length;
@@ -318,6 +414,13 @@ message.addEventListener('input', () => {
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  // Defensive cooldown check — page might be stale (user kept the tab open
+  // through a previous submit + countdown). Refuse and show the panel.
+  if (cdRemainingMs() > 0) {
+    cdShow();
+    return;
+  }
 
   // Client-side validation. Keep messages friendly + short.
   const msg = message.value.trim();
@@ -359,6 +462,10 @@ form.addEventListener('submit', async (e) => {
       mode: 'no-cors',     // opaque response — we don't read it
       body: fd,
     });
+    // Mark this browser as "just submitted" so the cooldown panel shows
+    // when they come back to /feedback.html within the next minute.
+    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); }
+    catch (e) { /* private mode etc. — best-effort */ }
     // We can't tell if the script succeeded (opaque response), but the
     // POST always reaches the script in practice. Redirect to the thanks
     // page; on the rare server-side failure the user can still re-submit

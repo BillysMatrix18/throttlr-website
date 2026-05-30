@@ -2819,6 +2819,107 @@ body::before {
 .ff-status.err { color: #ff6b81; }
 .ff-status.ok  { color: #a0e76c; }
 
+/* --- Cooldown panel (shown after a submit, ticks down for 60s) ------- */
+.ff-cooldown {
+  position: relative;
+  max-width: 560px;
+  margin: 24px auto 0;
+  padding: 36px 32px 28px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255,184,0,0.06), transparent 70%),
+    linear-gradient(180deg, #0c0d0e 0%, #08090a 100%);
+  border: 1px solid rgba(255,184,0,0.22);
+  border-radius: 4px;
+  text-align: center;
+  /* Subtle scanline texture matching the form */
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.012) 0px,
+    rgba(255,255,255,0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.ff-cd-label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--hazard);
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255,184,0,0.25);
+  margin-bottom: 28px;
+}
+.ff-cd-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--hazard);
+  /* Soft glow on the digits — reads as an LED display */
+  text-shadow:
+    0 0 14px rgba(255,184,0,0.45),
+    0 0 32px rgba(255,184,0,0.18);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+.ff-cd-progress {
+  margin: 22px auto 0;
+  width: 100%;
+  max-width: 420px;
+  height: 4px;
+  background: rgba(255,184,0,0.10);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ff-cd-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--hazard), #ffd970, var(--hazard));
+  background-size: 200% 100%;
+  box-shadow: 0 0 8px rgba(255,184,0,0.5);
+  transition: width 0.25s linear;
+  animation: ff-cd-shimmer 2.4s linear infinite;
+}
+@keyframes ff-cd-shimmer {
+  0%   { background-position:   0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.ff-cd-sub {
+  margin-top: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(232,230,216,0.62);
+  letter-spacing: 0.02em;
+}
+.ff-cd-sub #ff-cd-readable {
+  color: var(--hazard);
+  font-weight: 700;
+}
+.ff-cd-foot {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(255,184,0,0.18);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(232,230,216,0.45);
+}
+.ff-cd-foot a {
+  color: var(--hazard);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,184,0,0.4);
+  padding-bottom: 1px;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+.ff-cd-foot a:hover {
+  color: #ffd970;
+  border-bottom-color: #ffd970;
+}
+
 /* --- Sidebar (info panel) -------------------------------------------- */
 .feedback-side {
   align-self: start;
