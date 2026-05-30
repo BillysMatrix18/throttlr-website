@@ -112,44 +112,28 @@
     counterEls.forEach(function (el) { counterIO.observe(el); });
   }
 
-  // ---- v4: Cursor spotlight ----
-  // A soft yellow glow follows the mouse on desktop. The element is in
-  // the DOM as #cursorSpot; we just translate it via transform on rAF.
-  // On touch / narrow viewports the element is display:none in CSS.
-  const spot = document.getElementById('cursorSpot');
-  const isDesktopPointer = window.matchMedia('(min-width: 900px) and (pointer: fine)').matches;
-  if (spot && isDesktopPointer) {
-    let sx = window.innerWidth / 2;
-    let sy = window.innerHeight / 2;
-    let tx = sx, ty = sy;
-    let raf = false;
-    const tickSpot = function () {
-      // Easing — lag the spotlight behind the cursor for a smooth feel
-      sx += (tx - sx) * 0.18;
-      sy += (ty - sy) * 0.18;
-      spot.style.transform = 'translate3d(' + sx + 'px,' + sy + 'px,0) translate(-50%,-50%)';
-      // Update the body background spotlight tint too (subtler)
-      document.body.style.setProperty('--spot-x', sx + 'px');
-      document.body.style.setProperty('--spot-y', sy + 'px');
-      // Continue animating while we're still easing toward target
-      if (Math.abs(tx - sx) > 0.5 || Math.abs(ty - sy) > 0.5) {
-        window.requestAnimationFrame(tickSpot);
-      } else {
-        raf = false;
-      }
-    };
-    window.addEventListener('mousemove', function (e) {
-      tx = e.clientX; ty = e.clientY;
-      if (!spot.classList.contains('is-active')) spot.classList.add('is-active');
-      if (!raf) {
-        raf = true;
-        window.requestAnimationFrame(tickSpot);
-      }
-    }, { passive: true });
-    window.addEventListener('mouseleave', function () {
-      spot.classList.remove('is-active');
-    });
+  // ---- v4: Scroll-driven parallax CSS variable ----
+  // We expose window.scrollY as a CSS custom property on body, so CSS can
+  // drive parallax-style translations on background elements (bg-orbs,
+  // section overlays, etc.) without each one needing its own JS. The CSS
+  // multiplies the value by a fraction to get layered scroll speeds.
+  let lastScrollY = -1;
+  let scrollRaf = false;
+  function tickParallax() {
+    const y = window.scrollY || window.pageYOffset || 0;
+    document.body.style.setProperty('--scroll-y', y + 'px');
+    lastScrollY = y;
+    scrollRaf = false;
   }
+  window.addEventListener('scroll', function () {
+    if (!scrollRaf) {
+      scrollRaf = true;
+      window.requestAnimationFrame(tickParallax);
+    }
+  }, { passive: true });
+  tickParallax();
+
+  const isDesktopPointer = window.matchMedia('(min-width: 900px) and (pointer: fine)').matches;
 
   // ---- v4: 3D Card tilt with cursor-following glow ----
   // Cards in .usecase / .tool-card / .power-card / .design-card / .faq-item
@@ -243,6 +227,136 @@
       });
     });
   }
+
+  // ---- v4.1: Clickable architecture diagram (// 05) ----
+  // Each .arch-block has a data-arch identifier. Clicking one populates
+  // and opens the #archDetail panel below. Clicking the same block again
+  // (or the panel's close behavior) closes it.
+  const archBlocks = document.querySelectorAll('.arch-block[data-arch]');
+  const archDetail = document.getElementById('archDetail');
+  const archDetailNum = document.getElementById('archDetailNum');
+  const archDetailTitle = document.getElementById('archDetailTitle');
+  const archDetailBody = document.getElementById('archDetailBody');
+
+  const ARCH_DETAILS = {
+    app: {
+      num: '// 01',
+      title: 'TARGETED APP',
+      body: '<p>Any Windows process — <code>Discord.exe</code>, <code>chrome.exe</code>, a game, an installer. Throttlr matches by <strong>PID</strong>, not name, so two copies of the same exe stay independent.</p>' +
+            '<p>The app has no idea Throttlr exists. It calls <code>send()</code> / <code>recv()</code> through the normal Windows socket APIs, and the OS hands the packet to the kernel like usual.</p>' +
+            '<p>No DLL injection, no hooks in the target process, no admin rights needed on the target. The interception happens <strong>below</strong> the app — in the kernel — so this works even on processes you don\'t own.</p>'
+    },
+    os: {
+      num: '// 02',
+      title: 'WINDOWS TCP/IP STACK',
+      body: '<p>The packet enters the Windows kernel network stack — specifically <code>tcpip.sys</code>, which handles IP routing, TCP windowing, and dispatches packets to network adapters.</p>' +
+            '<p>Normally the packet would head straight to the NIC driver and out the wire. Throttlr inserts itself <strong>just before</strong> that, via the WFP (Windows Filtering Platform) framework that the WinDivert driver registers with.</p>' +
+            '<p>This is the kernel-mode layer where every outbound and inbound packet must pass — bulletproof choke point, no app can bypass it.</p>'
+    },
+    divert: {
+      num: '// 03',
+      title: 'WINDIVERT FILTER',
+      body: '<p>WinDivert is a kernel driver that lets userspace processes <em>capture, modify, and re-inject</em> packets. Throttlr opens a WinDivert handle with a filter string like:</p>' +
+            '<p><code>processId == 1234 and (outbound or inbound)</code></p>' +
+            '<p>Only packets matching are diverted out of the kernel and into Throttlr\'s userspace queue. Everything else flows through untouched at full speed — zero impact on apps you\'re not throttling.</p>' +
+            '<p>A second WinDivert handle runs in <strong>SNIFF mode</strong> on the FLOW layer, watching <code>WSA_FLOW_ESTABLISHED</code> events so Throttlr learns each new connection\'s PID the moment it\'s created. That\'s why per-app filtering has no polling lag.</p>'
+    },
+    engine: {
+      num: '// 04',
+      title: 'THROTTLR ENGINE',
+      body: '<p>Diverted packets land in a Python event loop. Each one runs through the function pipeline in a fixed order so the rules compose predictably:</p>' +
+            '<p><code>track → script → blocklists → block → freeze → drop → fun → throttle → lag</code></p>' +
+            '<p>Each function can do one of three things: <strong>forward immediately</strong>, <strong>queue for later</strong> (lag, throttle, freeze), or <strong>drop entirely</strong> (drop, block, blocklists, script-match).</p>' +
+            '<p>Throttle and lag use a min-heap priority queue keyed on release time, so the asyncio loop wakes up exactly when the next packet is due — no busy-waiting, no extra CPU.</p>'
+    },
+    dropped: {
+      num: '// 05a',
+      title: 'DROPPED',
+      body: '<p>The packet is silently discarded — never re-injected. The application sees a missing ACK and treats it as packet loss.</p>' +
+            '<p>For TCP this triggers retransmission and gradually slows the connection (TCP congestion control). For UDP/realtime traffic (voice, video, game state), the packet is just gone — perfect for simulating bad networks.</p>' +
+            '<p>Throttlr never sends an ICMP error or RST packet — drops are <strong>indistinguishable from real packet loss</strong>, which is the whole point.</p>'
+    },
+    delayed: {
+      num: '// 05b',
+      title: 'DELAYED',
+      body: '<p>The packet is held in a priority queue with a target release timestamp. The asyncio loop wakes up when the next packet\'s release time arrives, then re-injects it via WinDivert.</p>' +
+            '<p>Lag adds a fixed delay (with optional jitter); Throttle delays packets just enough to enforce a bandwidth cap. Freeze holds packets indefinitely until you release them as a burst.</p>' +
+            '<p>The heap-based scheduler means even with thousands of queued packets, the per-packet overhead is <code>O(log n)</code> — Throttlr can hold many seconds of traffic without lag.</p>'
+    },
+    forwarded: {
+      num: '// 05c',
+      title: 'FORWARDED',
+      body: '<p>The default case. Packet is re-injected into the kernel stack via <code>WinDivertSend()</code> and continues on its original journey — out the NIC, across the network, or up to userspace for inbound packets.</p>' +
+            '<p>The application sees no difference from a normal packet. Throttlr\'s overhead per forwarded packet is ~10-30µs — well under any user-perceptible threshold.</p>'
+    },
+  };
+
+  let currentArchKey = null;
+  function setArchDetail(key) {
+    const data = ARCH_DETAILS[key];
+    if (!data || !archDetail) return;
+    archDetailNum.textContent = data.num;
+    archDetailTitle.textContent = data.title;
+    archDetailBody.innerHTML = data.body;
+    archDetail.classList.add('is-open');
+  }
+  function closeArchDetail() {
+    if (archDetail) archDetail.classList.remove('is-open');
+    archBlocks.forEach(function (b) { b.classList.remove('is-active'); });
+    currentArchKey = null;
+  }
+  archBlocks.forEach(function (block) {
+    const key = block.getAttribute('data-arch');
+    const activate = function () {
+      if (currentArchKey === key) {
+        closeArchDetail();
+        return;
+      }
+      archBlocks.forEach(function (b) { b.classList.remove('is-active'); });
+      block.classList.add('is-active');
+      currentArchKey = key;
+      setArchDetail(key);
+      // Smooth-scroll the detail into view so the user actually sees it
+      setTimeout(function () {
+        archDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 120);
+    };
+    block.addEventListener('click', activate);
+    block.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+    });
+  });
+
+  // ---- v4.1: Script "Compile" tab (// 06) ----
+  // Clicking the Compile tab triggers a brief "compiling..." animation,
+  // then swaps to the AST view. Clicking filter.py switches back instantly.
+  const scriptTabs = document.querySelectorAll('.script-tab[data-script-tab]');
+  const scriptWindow = document.getElementById('scriptWindow');
+  const scriptStatus = document.getElementById('scriptStatusText');
+  const STATUS_SOURCE = 'Compiled · 0 errors · 4 rules ready · 12 AST nodes';
+  const STATUS_COMPILED = 'Showing compiled AST · 4 rules · all valid · sandbox checks ✓';
+  scriptTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      const target = tab.getAttribute('data-script-tab');
+      // Visually toggle active tab
+      scriptTabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      if (target === 'compiled') {
+        // Show the "compiling" overlay briefly, then swap to compiled view
+        scriptWindow.classList.add('is-compiling');
+        if (scriptStatus) scriptStatus.textContent = 'Compiling…';
+        setTimeout(function () {
+          scriptWindow.classList.remove('is-compiling');
+          scriptWindow.classList.add('is-compiled');
+          if (scriptStatus) scriptStatus.textContent = STATUS_COMPILED;
+        }, 900);
+      } else {
+        scriptWindow.classList.remove('is-compiled');
+        scriptWindow.classList.remove('is-compiling');
+        if (scriptStatus) scriptStatus.textContent = STATUS_SOURCE;
+      }
+    });
+  });
 
   // ---- Subtle parallax on hero mock ----
   // Mouse-based 3D tilt on the floating app screenshot.

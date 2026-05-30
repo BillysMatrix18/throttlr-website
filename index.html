@@ -29,9 +29,11 @@
   <div class="bg-orb bg-orb-3"></div>
 </div>
 
-<!-- v4 — Cursor spotlight. Desktop-only soft yellow glow that follows
-     the mouse via JS (translate3d). Hidden on touch / mobile via CSS. -->
-<div class="cursor-spotlight" id="cursorSpot" aria-hidden="true"></div>
+<!-- v4.1 — Hero-zone yellow ambient glow. Fixed-position overlay that's
+     fully opaque while we're near the top of the page (so the hero feels
+     warm and rich) and fades out as the user scrolls past it. CSS uses
+     the --scroll-y variable from app.js to drive the opacity. -->
+<div class="hero-zone-glow" aria-hidden="true"></div>
 
 <!-- Scroll progress indicator -->
 <div class="scroll-progress" id="scrollProgress"></div>
@@ -621,19 +623,19 @@
   </div>
   <div class="how-arch reveal">
     <div class="arch-row">
-      <div class="arch-block arch-app">
+      <div class="arch-block arch-app" data-arch="app" role="button" tabindex="0">
         <span class="arch-num">①</span>
         <div class="arch-block-title">Targeted app</div>
         <div class="arch-block-desc">e.g. Discord.exe sends a packet</div>
       </div>
       <span class="arch-arrow">→</span>
-      <div class="arch-block arch-os">
+      <div class="arch-block arch-os" data-arch="os" role="button" tabindex="0">
         <span class="arch-num">②</span>
         <div class="arch-block-title">Windows TCP/IP stack</div>
         <div class="arch-block-desc">Packet enters the kernel network layer</div>
       </div>
       <span class="arch-arrow">→</span>
-      <div class="arch-block arch-divert highlight">
+      <div class="arch-block arch-divert highlight" data-arch="divert" role="button" tabindex="0">
         <span class="arch-num">③</span>
         <div class="arch-block-title">WinDivert filter</div>
         <div class="arch-block-desc">Throttlr's filter matches by PID</div>
@@ -645,7 +647,7 @@
       <span class="arch-tube-glyph">⇣</span>
     </div>
     <div class="arch-row">
-      <div class="arch-block arch-engine highlight">
+      <div class="arch-block arch-engine highlight" data-arch="engine" role="button" tabindex="0">
         <span class="arch-num">④</span>
         <div class="arch-block-title">Throttlr engine</div>
         <div class="arch-block-desc">
@@ -660,21 +662,33 @@
       <span class="arch-tube-glyph">⇣</span>
     </div>
     <div class="arch-row arch-row-end">
-      <div class="arch-block arch-out warn">
+      <div class="arch-block arch-out warn" data-arch="dropped" role="button" tabindex="0">
         <span class="arch-num">⑤a</span>
         <div class="arch-block-title">Dropped</div>
         <div class="arch-block-desc">Packet never leaves the kernel</div>
       </div>
-      <div class="arch-block arch-out">
+      <div class="arch-block arch-out" data-arch="delayed" role="button" tabindex="0">
         <span class="arch-num">⑤b</span>
         <div class="arch-block-title">Delayed</div>
         <div class="arch-block-desc">Held in heap queue, released later</div>
       </div>
-      <div class="arch-block arch-out">
+      <div class="arch-block arch-out" data-arch="forwarded" role="button" tabindex="0">
         <span class="arch-num">⑤c</span>
         <div class="arch-block-title">Forwarded</div>
         <div class="arch-block-desc">Packet continues to the network</div>
       </div>
+    </div>
+  </div>
+
+  <!-- v4.1 — Detail panel populated by JS when an arch-block is clicked.
+       Hidden by default; gets .is-open class to animate in. -->
+  <div class="arch-detail" id="archDetail" aria-live="polite">
+    <div class="arch-detail-head">
+      <span class="arch-detail-num" id="archDetailNum">// 01</span>
+      <span class="arch-detail-title" id="archDetailTitle">PICK A BLOCK</span>
+    </div>
+    <div class="arch-detail-body" id="archDetailBody">
+      <p>Click any block in the diagram above to see what actually happens at that stage in detail.</p>
     </div>
   </div>
   <div class="how-side-note reveal">
@@ -696,12 +710,13 @@
     <p class="section-sub">Python-style expressions, sandboxed via AST whitelist. No imports, no exec, no system access. Just packet attributes and a few helpers.</p>
   </div>
   <div class="script-demo reveal">
-    <div class="script-window">
+    <div class="script-window" id="scriptWindow">
       <div class="script-tabs">
-        <span class="script-tab active">⚡ filter.py</span>
-        <span class="script-tab">⚙ Compile</span>
+        <span class="script-tab active" data-script-tab="source">⚡ filter.py</span>
+        <span class="script-tab" data-script-tab="compiled">⚙ Compile</span>
       </div>
-      <pre class="script-code"><span class="cmt"># drop all 443 traffic to discord servers but only 30% of the time</span>
+      <div class="script-source">
+        <pre class="script-code"><span class="cmt"># drop all 443 traffic to discord servers but only 30% of the time</span>
 <span class="kw">endswith</span>(pkt.host, <span class="str">".discord.gg"</span>) <span class="kw">and</span> <span class="kw">random</span>() &lt; <span class="num">0.3</span>
 
 <span class="cmt"># keep only TCP packets larger than 500 bytes on port 443</span>
@@ -712,9 +727,56 @@ pkt.country == <span class="str">"RU"</span> <span class="kw">or</span> pkt.coun
 
 <span class="cmt"># nuke all UDP from high ephemeral ports — be careful</span>
 pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_port &gt;= <span class="num">50000</span></pre>
+      </div>
+      <!-- v4.1 — Compiled output view. Shown when the Compile tab is active.
+           Displays an AST/structure breakdown for each rule so users can
+           see what the sandbox actually does with their expression. -->
+      <div class="script-compiled" id="scriptCompiled">
+        <div class="sc-rule">
+          <div class="sc-rule-head">RULE 1 — 30% Discord drop</div>
+          <div class="sc-rule-source">endswith(pkt.host, ".discord.gg") and random() &lt; 0.3</div>
+          <div class="sc-rule-ast">BoolOp(<span style="color:#66d9ef">And</span>, [<br>
+            &nbsp;&nbsp;Call(<span style="color:#ffb800">endswith</span>, [Attr(pkt.host), Str ".discord.gg"]),<br>
+            &nbsp;&nbsp;Compare(Call(<span style="color:#ffb800">random</span>), Lt, Num 0.3)<br>
+            ])
+          </div>
+          <div class="sc-rule-meta">2 helper calls · 1 attribute access · <span class="ok">✓ valid</span></div>
+        </div>
+        <div class="sc-rule">
+          <div class="sc-rule-head">RULE 2 — TCP filter</div>
+          <div class="sc-rule-source">pkt.proto == "TCP" and pkt.dst_port == 443 and pkt.size &gt; 500</div>
+          <div class="sc-rule-ast">BoolOp(<span style="color:#66d9ef">And</span>, [<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.proto), Eq, Str "TCP"),<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.dst_port), Eq, Num 443),<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.size), Gt, Num 500)<br>
+            ])
+          </div>
+          <div class="sc-rule-meta">0 helper calls · 3 attribute accesses · <span class="ok">✓ valid</span></div>
+        </div>
+        <div class="sc-rule">
+          <div class="sc-rule-head">RULE 3 — Country block</div>
+          <div class="sc-rule-source">pkt.country == "RU" or pkt.country == "CN"</div>
+          <div class="sc-rule-ast">BoolOp(<span style="color:#66d9ef">Or</span>, [<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.country), Eq, Str "RU"),<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.country), Eq, Str "CN")<br>
+            ])
+          </div>
+          <div class="sc-rule-meta">0 helper calls · 2 attribute accesses · <span class="ok">✓ valid</span></div>
+        </div>
+        <div class="sc-rule">
+          <div class="sc-rule-head">RULE 4 — UDP high-port</div>
+          <div class="sc-rule-source">pkt.proto == "UDP" and pkt.dst_port &gt;= 50000</div>
+          <div class="sc-rule-ast">BoolOp(<span style="color:#66d9ef">And</span>, [<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.proto), Eq, Str "UDP"),<br>
+            &nbsp;&nbsp;Compare(Attr(pkt.dst_port), GtE, Num 50000)<br>
+            ])
+          </div>
+          <div class="sc-rule-meta">0 helper calls · 2 attribute accesses · <span class="ok">✓ valid</span></div>
+        </div>
+      </div>
       <div class="script-status">
         <span class="status-dot"></span>
-        <span class="status-text">Compiled · 0 errors · ready</span>
+        <span class="status-text" id="scriptStatusText">Compiled · 0 errors · 4 rules ready · 12 AST nodes</span>
       </div>
     </div>
     <div class="script-fields">
@@ -753,33 +815,17 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
     <div class="design-card reveal">
       <div class="design-tag design-tag-industrial">INDUSTRIAL</div>
       <p class="design-desc">Hazard yellow on black. Big Shoulders Stencil. CRT scanlines, hazard-tape dividers, sharp corner brackets. The default — built for the workshop aesthetic.</p>
-      <div class="design-mock design-mock-industrial">
-        <div class="dm-header">
-          <span class="dm-num">02</span>
-          <span class="dm-title">Functions</span>
-        </div>
-        <div class="dm-funcs">
-          <div class="dm-fn on"><span class="dm-knob"></span><span>Lag</span><span class="dm-meta">200 ms ±50</span></div>
-          <div class="dm-fn"><span class="dm-knob"></span><span>Drop</span><span class="dm-meta">—</span></div>
-          <div class="dm-fn on"><span class="dm-knob"></span><span>Throttle</span><span class="dm-meta">100 KB/s</span></div>
-          <div class="dm-fn"><span class="dm-knob"></span><span>Freeze</span><span class="dm-meta">—</span></div>
-        </div>
+      <!-- v4.1 — Real screenshot of the Industrial theme replaces the
+           CSS mockup. Lazy-loaded since it's below the fold. -->
+      <div class="design-preview">
+        <img src="theme-hazard.png" alt="Throttlr Industrial theme — hazard yellow on black" loading="lazy">
       </div>
     </div>
     <div class="design-card reveal" style="--d: 0.1s">
       <div class="design-tag design-tag-midnight">MIDNIGHT</div>
       <p class="design-desc">Deep navy. Inter typeface. Glassmorphic surfaces, rounded corners, soft glows. <strong>Six accent variants</strong>: Aurora, Sunset, Forest, Amber, Rose, Ocean. Plus a custom HEX picker.</p>
-      <div class="design-mock design-mock-midnight">
-        <div class="dm-header dm-header-midnight">
-          <span class="dm-num dm-num-midnight">02</span>
-          <span class="dm-title dm-title-midnight">Functions</span>
-        </div>
-        <div class="dm-funcs">
-          <div class="dm-fn dm-fn-midnight on"><span class="dm-knob dm-knob-midnight"></span><span>Lag</span><span class="dm-meta dm-meta-midnight">200 ms ±50</span></div>
-          <div class="dm-fn dm-fn-midnight"><span class="dm-knob dm-knob-midnight"></span><span>Drop</span><span class="dm-meta dm-meta-midnight">—</span></div>
-          <div class="dm-fn dm-fn-midnight on"><span class="dm-knob dm-knob-midnight"></span><span>Throttle</span><span class="dm-meta dm-meta-midnight">100 KB/s</span></div>
-          <div class="dm-fn dm-fn-midnight"><span class="dm-knob dm-knob-midnight"></span><span>Freeze</span><span class="dm-meta dm-meta-midnight">—</span></div>
-        </div>
+      <div class="design-preview">
+        <img src="theme-deep.png" alt="Throttlr Midnight theme — deep navy with cool accents" loading="lazy">
       </div>
     </div>
     <div class="design-card reveal" style="--d: 0.2s">

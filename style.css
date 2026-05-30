@@ -3002,62 +3002,71 @@ body::before {
 .thanks-secondary:hover { color: #ffb800; }
 
 
+
 /* =====================================================================
- * v4 — VISUAL UPGRADE
- * Layered background depth, blueprint grid, ambient orbs, cursor
- * spotlight, 3D card tilt, magnetic buttons, polished link underlines.
- * Everything below is additive over the base styles.
+ * v4.1 — VISUAL UPGRADE (revised)
+ * Two-zone background: yellow-tinted "main" zone fades out as you scroll
+ * past the hero, leaving a more neutral darker zone for the rest of the
+ * page. Animated ambient orbs with scroll-driven parallax. Clickable
+ * how-it-works diagram. Tabbed filter "compile" view. Theme screenshots
+ * in the designs section. Distinct downloadable card for the final CTA.
+ * Cursor spotlight removed per Billy's request.
  * ===================================================================== */
 
-/* --- Background: layered gradients + blueprint grid ----------------- */
+/* --- Base body: neutral dark gradient (no global yellow tint) -------- */
 body {
-  /* Falling back to a dark base color underneath the gradient stack */
-  background-color: #08090b;
+  background-color: #0a0b0d;
   background-image:
-    /* Mouse spotlight on body — softly tinted yellow, follows the cursor.
-     * The actual high-contrast spotlight is a separate .cursor-spotlight
-     * element with mix-blend-mode; this body-level tint is the gentle
-     * background warmth. */
-    radial-gradient(800px circle at var(--spot-x, 50vw) var(--spot-y, 8vh),
-                    rgba(255, 184, 0, 0.055),
-                    transparent 60%),
-    /* Vignette — darkens the edges for depth */
-    radial-gradient(140% 110% at 50% 50%,
-                    transparent 35%,
-                    rgba(0, 0, 0, 0.55) 100%),
-    /* Soft ambient glows, fixed in place */
-    radial-gradient(circle at 22% 14%, rgba(255, 184, 0, 0.07) 0%, transparent 38%),
-    radial-gradient(circle at 84% 80%, rgba(102, 217, 255, 0.035) 0%, transparent 42%),
-    radial-gradient(circle at 60% 28%, rgba(255, 184, 0, 0.03) 0%, transparent 32%),
-    /* Blueprint grid — extremely subtle technical pattern, gives the
-     * background "structure" without dominating. Mask is via fade-to-black
-     * at the edges (vignette overlap softens the grid at corners). */
-    linear-gradient(rgba(255, 184, 0, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 184, 0, 0.022) 1px, transparent 1px),
-    /* Larger grid for hierarchy */
-    linear-gradient(rgba(255, 184, 0, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 184, 0, 0.04) 1px, transparent 1px),
-    /* Base vertical gradient — gray top, near-black bottom */
-    linear-gradient(180deg, #101214 0%, #0a0b0d 35%, #06070a 75%, #050607 100%);
+    /* Vignette — darker corners for depth */
+    radial-gradient(140% 110% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%),
+    /* A cool cyan whisper in the lower-right of the viewport */
+    radial-gradient(circle at 88% 92%, rgba(102, 217, 255, 0.025) 0%, transparent 45%),
+    /* Blueprint grid — very subtle technical pattern */
+    linear-gradient(rgba(180, 180, 200, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 180, 200, 0.012) 1px, transparent 1px),
+    linear-gradient(rgba(180, 180, 200, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 180, 200, 0.022) 1px, transparent 1px),
+    /* Base vertical gradient — top is slightly lighter, bottom near-black */
+    linear-gradient(180deg, #0e1014 0%, #0a0b0d 35%, #06070a 70%, #050608 100%);
   background-size:
-    100% 100%,                 /* spotlight */
-    100% 100%,                 /* vignette */
-    100% 100%, 100% 100%, 100% 100%,  /* ambient orbs */
-    40px 40px, 40px 40px,      /* minor grid */
-    200px 200px, 200px 200px,  /* major grid */
-    100% 100%;                 /* base */
+    100% 100%, 100% 100%,
+    40px 40px, 40px 40px,
+    200px 200px, 200px 200px,
+    100% 100%;
   background-attachment: fixed;
   background-position: 0 0;
 }
 
-/* Slow-drifting animated orbs — real DOM elements so we can animate them.
- * Sits BEHIND content (z-index: -1) but ABOVE body background. */
+/* --- Hero-zone overlay: a yellow ambient glow that's only visible at the
+ * top of the page. We attach it to body::before (we already have ::before
+ * for the film grain, so we use a NEW fixed div .hero-zone-glow below
+ * instead — added in the HTML). */
+.hero-zone-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;            /* behind content, above body bg */
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 184, 0, 0.18) 0%, transparent 38%),
+    radial-gradient(circle at 80% 8%,  rgba(255, 184, 0, 0.10) 0%, transparent 40%),
+    radial-gradient(circle at 50% 0%,  rgba(255, 184, 0, 0.08) 0%, transparent 30%);
+  /* Fade out as the page scrolls past the hero. --scroll-y is set by JS in px.
+   * At scroll=0 → opacity 1. At scroll=~600px → opacity 0. linear fade. */
+  opacity: clamp(0, calc(1 - var(--scroll-y, 0px) / 600px), 1);
+  will-change: opacity;
+}
+
+/* --- Animated ambient orbs with scroll-driven parallax -------------- */
 .bg-orbs {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   overflow: hidden;
+  /* PARALLAX: translate the container UP slowly as user scrolls down.
+   * The fraction (here -0.18) controls how much "depth" the orbs have. */
+  transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.18), 0);
+  will-change: transform;
 }
 .bg-orb {
   position: absolute;
@@ -3067,27 +3076,22 @@ body {
   will-change: transform;
 }
 .bg-orb-1 {
-  top: -8%;
-  left: -6%;
-  width: 620px;
-  height: 620px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.20), transparent 65%);
+  top: -8%;  left: -6%;
+  width: 620px; height: 620px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.22), transparent 65%);
   animation: orb-drift-1 32s ease-in-out infinite;
 }
 .bg-orb-2 {
-  bottom: -12%;
-  right: -8%;
-  width: 540px;
-  height: 540px;
+  /* This one sits FURTHER down the page so it shows after the hero */
+  top: 90vh; right: -8%;
+  width: 540px; height: 540px;
   background: radial-gradient(circle, rgba(102, 217, 255, 0.13), transparent 65%);
   animation: orb-drift-2 38s ease-in-out infinite;
 }
 .bg-orb-3 {
-  top: 45%;
-  left: 35%;
-  width: 460px;
-  height: 460px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 65%);
+  top: 50vh; left: 30%;
+  width: 460px; height: 460px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.06), transparent 65%);
   animation: orb-drift-3 46s ease-in-out infinite;
 }
 @keyframes orb-drift-1 {
@@ -3105,30 +3109,7 @@ body {
   50%      { transform: translate(-130px, -90px); }
 }
 
-/* Cursor spotlight — soft yellow glow that follows the mouse on desktop */
-.cursor-spotlight {
-  position: fixed;
-  top: 0; left: 0;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 60%);
-  pointer-events: none;
-  z-index: 3;
-  transform: translate3d(-50%, -50%, 0);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  mix-blend-mode: screen;
-  will-change: transform, left, top;
-}
-.cursor-spotlight.is-active { opacity: 1; }
-@media (max-width: 900px), (pointer: coarse) {
-  .cursor-spotlight { display: none; }
-}
-
 /* --- 3D Card tilt ---------------------------------------------------- */
-/* Cards get position:relative (most already have it) so the glow pseudo
- * works. The transform is applied via JS via inline style. */
 .usecase, .tool-card, .power-card, .design-card, .faq-item {
   position: relative;
   transform-style: preserve-3d;
@@ -3143,8 +3124,6 @@ body {
   transition: transform 0.06s linear, border-color 0.3s ease, box-shadow 0.3s ease;
   z-index: 5;
 }
-/* Glow that follows the cursor across the card surface. Controlled by
- * --mx/--my CSS variables set in JS from mouse position. */
 .usecase::after, .tool-card::after, .power-card::after,
 .design-card::after, .faq-item::after {
   content: '';
@@ -3166,13 +3145,11 @@ body {
 .faq-item.is-tilting::after {
   opacity: 1;
 }
-/* Make sure card content stays above the glow pseudo */
 .usecase > *, .tool-card > *, .power-card > *,
 .design-card > *, .faq-item > * {
   position: relative;
   z-index: 2;
 }
-/* Borders brighten + add a soft shadow when hovering — adds to the lift */
 .usecase:hover, .tool-card:hover, .power-card:hover,
 .design-card:hover, .faq-item:hover {
   border-color: rgba(255, 184, 0, 0.42);
@@ -3181,7 +3158,7 @@ body {
     0 0 36px rgba(255, 184, 0, 0.08);
 }
 
-/* --- Magnetic buttons (translate via inline style from JS) ----------- */
+/* --- Magnetic buttons ----------------------------------------------- */
 .nav-cta, .btn-download, .btn-secondary {
   transition:
     transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -3191,35 +3168,16 @@ body {
   will-change: transform;
 }
 .nav-cta.is-magnetic, .btn-download.is-magnetic, .btn-secondary.is-magnetic {
-  transition: transform 0.06s linear,
-              box-shadow 0.25s ease,
-              background-color 0.2s ease,
-              color 0.2s ease;
+  transition: transform 0.06s linear, box-shadow 0.25s ease,
+              background-color 0.2s ease, color 0.2s ease;
 }
 
-/* --- Polished link underline animation ------------------------------- */
-.section-sub a, .faq-a a {
-  position: relative;
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0% 1px;
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  transition: background-size 0.3s ease;
-}
-.section-sub a:hover, .faq-a a:hover {
-  background-size: 100% 1px;
-}
-
-/* --- Heading "shine" sweep on hover --------------------------------- */
-/* Adds a subtle moving gloss across major section titles when hovered */
+/* --- Section-title shine sweep -------------------------------------- */
 .section-title {
   background: linear-gradient(
     100deg,
-    var(--bone) 0%,
-    var(--bone) 40%,
-    var(--hazard-2) 50%,
-    var(--bone) 60%,
-    var(--bone) 100%
+    var(--bone) 0%, var(--bone) 40%,
+    var(--hazard-2) 50%, var(--bone) 60%, var(--bone) 100%
   );
   background-size: 200% 100%;
   background-position: -100% 0;
@@ -3228,6 +3186,310 @@ body {
   -webkit-text-fill-color: transparent;
   transition: background-position 0.9s ease;
 }
-.section-title:hover {
-  background-position: 200% 0;
+.section-title:hover { background-position: 200% 0; }
+
+/* --- Polished link underline ---------------------------------------- */
+.section-sub a, .faq-a a {
+  position: relative;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.3s ease;
+}
+.section-sub a:hover, .faq-a a:hover { background-size: 100% 1px; }
+
+/* =====================================================================
+ * v4.1 — Section // 05 — Clickable architecture diagram
+ * Each arch-block is now interactive. Clicking expands a detail panel
+ * below the diagram showing what that step actually does in technical
+ * depth. Hover state hints at clickability.
+ * ===================================================================== */
+.arch-block {
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+.arch-block:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 184, 0, 0.55) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 18px rgba(255, 184, 0, 0.10);
+}
+.arch-block.is-active {
+  border-color: var(--hazard) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 24px rgba(255, 184, 0, 0.22);
+  transform: translateY(-1px);
+}
+/* Subtle "click me" cue — small caret in the corner */
+.arch-block::before {
+  content: '+';
+  position: absolute;
+  top: 8px; right: 12px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 184, 0, 0.45);
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+.arch-block.is-active::before {
+  content: '−';
+  color: var(--hazard);
+  transform: rotate(180deg);
+}
+
+/* Detail panel — sits below the diagram, animated open/close */
+.arch-detail {
+  margin: 26px auto 0;
+  max-width: 980px;
+  padding: 24px 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 184, 0, 0.06), rgba(255, 184, 0, 0.02)),
+    rgba(8, 9, 11, 0.85);
+  border: 1px solid rgba(255, 184, 0, 0.28);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  transition: max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.32s ease,
+              padding 0.32s ease,
+              margin 0.32s ease;
+}
+.arch-detail.is-open {
+  max-height: 800px;
+  opacity: 1;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  margin-top: 26px;
+}
+.arch-detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(255, 184, 0, 0.25);
+  font-family: var(--font-mono);
+}
+.arch-detail-num {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--hazard);
+}
+.arch-detail-title {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--bone);
+  text-transform: uppercase;
+}
+.arch-detail-body {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: rgba(232, 230, 216, 0.78);
+}
+.arch-detail-body p { margin-bottom: 10px; }
+.arch-detail-body p:last-child { margin-bottom: 0; }
+.arch-detail-body code {
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.22);
+  border-radius: 2px;
+  color: var(--hazard);
+  font-size: 12.5px;
+}
+.arch-detail-body strong { color: var(--bone); font-weight: 600; }
+
+/* =====================================================================
+ * v4.1 — Section // 06 — Working Compile tab
+ * Clicking the Compile tab switches to a compiled-output view, after a
+ * brief "compiling..." animation. Click filter.py to switch back.
+ * ===================================================================== */
+.script-tab {
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  user-select: none;
+}
+.script-tab:hover:not(.active) {
+  color: var(--bone);
+  background: rgba(255, 184, 0, 0.05);
+}
+.script-window {
+  position: relative;
+}
+/* Compile-mode swaps which view is shown via these classes */
+.script-source, .script-compiled {
+  transition: opacity 0.25s ease;
+}
+.script-compiled {
+  display: none;
+}
+.script-window.is-compiled .script-source { display: none; }
+.script-window.is-compiled .script-compiled { display: block; }
+
+/* The compiled output panel — shows AST/bytecode-ish breakdown */
+.script-compiled {
+  padding: 18px 22px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(232, 230, 216, 0.85);
+  min-height: 280px;
+}
+.sc-rule {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed rgba(255, 184, 0, 0.15);
+}
+.sc-rule:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+.sc-rule-head {
+  color: var(--hazard);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.sc-rule-source {
+  color: rgba(232, 230, 216, 0.55);
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(255, 184, 0, 0.22);
+}
+.sc-rule-ast {
+  color: #66e5b8;
+  font-size: 12.5px;
+  margin-left: 14px;
+}
+.sc-rule-meta {
+  margin-top: 6px;
+  margin-left: 14px;
+  font-size: 11.5px;
+  color: rgba(232, 230, 216, 0.5);
+}
+.sc-rule-meta .ok { color: #66e5b8; }
+
+/* Loading overlay shown while "compiling" */
+.script-window.is-compiling::after {
+  content: 'COMPILING\A···';
+  white-space: pre;
+  position: absolute;
+  inset: 38px 0 38px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--hazard);
+  background: rgba(8, 9, 11, 0.85);
+  z-index: 3;
+  animation: sc-compiling 1.2s ease infinite;
+}
+@keyframes sc-compiling {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* =====================================================================
+ * v4.1 — Section // 07 — Theme preview screenshots
+ * Use real Throttlr screenshots as preview images for the first two
+ * design cards (INDUSTRIAL + MIDNIGHT). The other two stay as their
+ * existing mockups (WIN7) or text-only descriptions.
+ * ===================================================================== */
+.design-preview {
+  margin-top: 14px;
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #0a0b0d;
+  border: 1px solid rgba(255, 184, 0, 0.18);
+  position: relative;
+  transition: border-color 0.25s ease, transform 0.3s ease;
+}
+.design-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: block;
+}
+.design-card:hover .design-preview { border-color: rgba(255, 184, 0, 0.4); }
+.design-card:hover .design-preview img { transform: scale(1.04); }
+
+/* =====================================================================
+ * v4.1 — Final CTA card — distinct dark "container" so it stands apart
+ * from the rest of the page and reads as a "ready, go now" zone.
+ * ===================================================================== */
+.cta-final {
+  /* Existing styles handle layout; we add a richer card-like background */
+  position: relative;
+  background:
+    /* Center spotlight glow drawing focus to the download button */
+    radial-gradient(ellipse 50% 60% at 50% 55%,
+                    rgba(255, 184, 0, 0.10) 0%,
+                    transparent 70%),
+    /* Subtle inner-darkening for contrast against the page */
+    radial-gradient(140% 90% at 50% 50%, transparent 30%, rgba(0,0,0,0.45) 100%),
+    /* Base dark gradient — DARKER than the page bg so it pops as separate */
+    linear-gradient(180deg, #07080a 0%, #04050700 50%, #07080a 100%),
+    /* Soft layered dark fill */
+    #050608;
+  border-top: 1px solid rgba(255, 184, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 184, 0, 0.25);
+  padding-top: 90px !important;
+  padding-bottom: 90px !important;
+  /* A subtle inner shadow so the panel reads as recessed */
+  box-shadow:
+    inset 0 30px 60px rgba(0, 0, 0, 0.55),
+    inset 0 -30px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+/* Subtle scanline + grid texture only inside the CTA so it feels like a
+ * different surface from the rest of the page */
+.cta-final::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 184, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 184, 0, 0.04) 1px, transparent 1px),
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0) 0px, rgba(255, 255, 255, 0) 3px,
+      rgba(255, 255, 255, 0.012) 3px, rgba(255, 255, 255, 0.012) 4px);
+  background-size: 50px 50px, 50px 50px, 100% 100%;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
+}
+/* Corner brackets get a glow so they read as a real frame */
+.cta-final .corner {
+  border-color: var(--hazard);
+  box-shadow: 0 0 12px rgba(255, 184, 0, 0.3);
+}
+/* The download button itself gets stronger glow inside the CTA */
+.cta-final .btn-download-final {
+  box-shadow:
+    0 8px 30px rgba(255, 184, 0, 0.28),
+    0 0 0 1px rgba(255, 184, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.cta-final .btn-download-final:hover {
+  box-shadow:
+    0 12px 40px rgba(255, 184, 0, 0.42),
+    0 0 0 1px var(--hazard),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
