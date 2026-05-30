@@ -2506,16 +2506,16 @@ body::before {
   letter-spacing: 0.16em;
   color: var(--hazard);
   line-height: 1;
-  /* Optical nudge: monospace cap-height is shorter than the stencil's, so
-   * even with align-items: center the number reads as slightly low. A 1px
-   * push lines it up with the stencil's visual middle. */
-  transform: translateY(1px);
 }
 .ff-group-name {
-  font-family: 'Big Shoulders Stencil', sans-serif;
-  font-size: 22px;
+  /* JetBrains Mono (same family as the number and meta) so all three
+   * pieces share font metrics — that's what gives the head a clean,
+   * baseline-perfect alignment. Stencil looked good in isolation but
+   * its cap-height made it visually float above the mono. */
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 17px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--bone);
   text-transform: uppercase;
   line-height: 1;
@@ -2526,7 +2526,6 @@ body::before {
   letter-spacing: 0.06em;
   color: rgba(232,230,216,0.45);
   line-height: 1;
-  transform: translateY(1px);
 }
 
 .ff-group-body { display: flex; flex-direction: column; gap: 14px; }
@@ -2612,7 +2611,11 @@ body::before {
 @media (max-width: 900px) { .ff-switch-bank { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .ff-switch-bank { grid-template-columns: 1fr; } }
 
-.ff-switch { cursor: pointer; user-select: none; }
+.ff-switch {
+  display: flex;          /* let inner stretch */
+  cursor: pointer;
+  user-select: none;
+}
 .ff-switch input { position: absolute; opacity: 0; pointer-events: none; }
 .ff-switch-inner {
   position: relative;
@@ -2620,6 +2623,7 @@ body::before {
   align-items: center;
   gap: 12px;
   padding: 13px 14px;
+  flex: 1;               /* fill the grid row's height — equal-height buttons */
   background: #07090a;
   border: 1px solid rgba(255,184,0,0.20);
   border-radius: 2px;
