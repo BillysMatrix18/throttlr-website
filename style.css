@@ -3013,28 +3013,19 @@ body::before {
  * Cursor spotlight removed per Billy's request.
  * ===================================================================== */
 
-/* --- Base body: warm yellow ambient atmosphere brought back --------- 
- * v4.3 — Multi-layer warm gradient throughout the page so the whole site
- * feels rich and industrial (not just the hero). These are viewport-fixed
- * so they stay consistent as you scroll. The PARALLAX motion comes from
- * the separate layers above (.parallax-grid, .bg-orbs, .hero-zone-glow)
- * which translate at different scroll speeds for the 3D depth effect. */
+/* --- Base body: NEUTRAL DARK GRAY (no yellow ambient tint) ---------
+ * v4.4 — Billy wanted gray with a grid look (not yellow-tinted). So body
+ * is just a base vertical gradient and a vignette. The grid pattern is
+ * what defines the visual character, courtesy of .parallax-grid above.
+ * Hero gets its yellow via .hero-zone-glow which fades out on scroll. */
 body {
   background-color: #0a0b0d;
   background-image:
-    /* Vignette — darker corners */
+    /* Vignette — darker corners for depth */
     radial-gradient(140% 110% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%),
-    /* WARM YELLOW AMBIENT GLOWS — throughout the page, fixed in viewport */
-    radial-gradient(circle at 18% 12%, rgba(255, 184, 0, 0.12) 0%, transparent 38%),
-    radial-gradient(circle at 85% 25%, rgba(255, 184, 0, 0.07) 0%, transparent 42%),
-    radial-gradient(circle at 50% 55%, rgba(255, 184, 0, 0.05) 0%, transparent 38%),
-    radial-gradient(circle at 20% 80%, rgba(255, 184, 0, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 85% 88%, rgba(255, 184, 0, 0.04) 0%, transparent 42%),
-    /* Cool cyan accent so the warmth isn't monotone */
-    radial-gradient(circle at 92% 60%, rgba(102, 217, 255, 0.04) 0%, transparent 45%),
-    /* Base vertical gradient */
-    linear-gradient(180deg, #100f0a 0%, #0a0b0d 35%, #08080a 70%, #050608 100%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    /* Base vertical gradient — top slightly lighter, bottom near-black */
+    linear-gradient(180deg, #0e1014 0%, #0a0b0d 35%, #08090c 70%, #050608 100%);
+  background-size: 100% 100%, 100% 100%;
   background-attachment: fixed;
   background-position: 0 0;
 }
@@ -3084,43 +3075,45 @@ body {
   transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.25), 0);
 }
 
-/* --- Ambient orbs — MORE VISIBLE parallax now. Bigger movement, bigger
- *     orbs, slightly less blur so the translation is actually perceptible. */
+/* --- Ambient orbs — VERY subtle now. Provide parallax depth without
+ *     tinting the page yellow. Hero-zone-glow handles the warmth at top. */
 .bg-orbs {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
   overflow: hidden;
-  /* PARALLAX — bumped from -0.18 to -0.55 for a clearly visible effect. */
   transform: translate3d(0, calc(var(--scroll-y, 0px) * -0.55), 0);
   will-change: transform;
 }
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  /* Less blur so the orb is actually visible as a shape (was 90px) */
-  filter: blur(70px);
-  opacity: 0.7;
+  filter: blur(90px);
+  opacity: 0.45;
   will-change: transform;
 }
 .bg-orb-1 {
+  /* This one sits in the hero area, slight yellow tint — paired with
+   * hero-zone-glow it makes the top of the page feel warm; once scrolled
+   * past, it's well outside viewport. */
   top: -6%;  left: -4%;
   width: 680px; height: 680px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.28), transparent 65%);
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.18), transparent 65%);
   animation: orb-drift-1 32s ease-in-out infinite;
 }
 .bg-orb-2 {
-  /* Lower on page so it scrolls into view */
+  /* Mid-page orb — neutral cool gray-blue so it doesn't add color */
   top: 110vh; right: -6%;
   width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(102, 217, 255, 0.18), transparent 65%);
+  background: radial-gradient(circle, rgba(140, 160, 180, 0.08), transparent 65%);
   animation: orb-drift-2 38s ease-in-out infinite;
 }
 .bg-orb-3 {
+  /* Deeper orb — also neutral */
   top: 240vh; left: 25%;
   width: 520px; height: 520px;
-  background: radial-gradient(circle, rgba(255, 184, 0, 0.10), transparent 65%);
+  background: radial-gradient(circle, rgba(160, 170, 180, 0.06), transparent 65%);
   animation: orb-drift-3 46s ease-in-out infinite;
 }
 @keyframes orb-drift-1 {
