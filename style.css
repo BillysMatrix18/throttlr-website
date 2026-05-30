@@ -3013,21 +3013,28 @@ body::before {
  * Cursor spotlight removed per Billy's request.
  * ===================================================================== */
 
-/* --- Base body: neutral dark gradient (no global yellow tint) --------
- * v4.2 — REMOVED the blueprint grid from body bg. The grid is now its own
- * fixed PARALLAX element (.parallax-grid) that translates at its own
- * scroll speed for a visible 3D depth effect. body bg keeps the vertical
- * gradient + vignette + a faint cyan whisper. */
+/* --- Base body: warm yellow ambient atmosphere brought back --------- 
+ * v4.3 — Multi-layer warm gradient throughout the page so the whole site
+ * feels rich and industrial (not just the hero). These are viewport-fixed
+ * so they stay consistent as you scroll. The PARALLAX motion comes from
+ * the separate layers above (.parallax-grid, .bg-orbs, .hero-zone-glow)
+ * which translate at different scroll speeds for the 3D depth effect. */
 body {
   background-color: #0a0b0d;
   background-image:
-    /* Vignette — darker corners for depth */
+    /* Vignette — darker corners */
     radial-gradient(140% 110% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%),
-    /* A cool cyan whisper in the lower-right of the viewport */
-    radial-gradient(circle at 88% 92%, rgba(102, 217, 255, 0.025) 0%, transparent 45%),
-    /* Base vertical gradient — top is slightly lighter, bottom near-black */
-    linear-gradient(180deg, #0e1014 0%, #0a0b0d 35%, #06070a 70%, #050608 100%);
-  background-size: 100% 100%, 100% 100%, 100% 100%;
+    /* WARM YELLOW AMBIENT GLOWS — throughout the page, fixed in viewport */
+    radial-gradient(circle at 18% 12%, rgba(255, 184, 0, 0.12) 0%, transparent 38%),
+    radial-gradient(circle at 85% 25%, rgba(255, 184, 0, 0.07) 0%, transparent 42%),
+    radial-gradient(circle at 50% 55%, rgba(255, 184, 0, 0.05) 0%, transparent 38%),
+    radial-gradient(circle at 20% 80%, rgba(255, 184, 0, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 88%, rgba(255, 184, 0, 0.04) 0%, transparent 42%),
+    /* Cool cyan accent so the warmth isn't monotone */
+    radial-gradient(circle at 92% 60%, rgba(102, 217, 255, 0.04) 0%, transparent 45%),
+    /* Base vertical gradient */
+    linear-gradient(180deg, #100f0a 0%, #0a0b0d 35%, #08080a 70%, #050608 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed;
   background-position: 0 0;
 }
@@ -3453,48 +3460,43 @@ body {
 .design-card:hover .design-preview img { transform: scale(1.04); }
 
 /* =====================================================================
- * v4.1 — Final CTA card — distinct dark "container" so it stands apart
- * from the rest of the page and reads as a "ready, go now" zone.
- * v4.2 — Removed the yellow horizontal borders (the hazard strips
- * already do that job). Tone down the corner-bracket glow.
+ * v4.3 — Final CTA — Clean, no framing
+ * Billy didn't like the framed/bordered panel look. Removed:
+ *   - corner brackets (display: none)
+ *   - the recessed dark distinct background
+ *   - inner shadows
+ * Kept: a soft spotlight behind the content + the button's own glow.
+ * The hazard strips above/below the section already provide the visual
+ * boundary; the CTA just sits naturally between them.
  * ===================================================================== */
 .cta-final {
   position: relative;
-  background:
-    radial-gradient(ellipse 50% 60% at 50% 55%,
-                    rgba(255, 184, 0, 0.10) 0%,
-                    transparent 70%),
-    radial-gradient(140% 90% at 50% 50%, transparent 30%, rgba(0,0,0,0.45) 100%),
-    linear-gradient(180deg, #07080a 0%, #04050700 50%, #07080a 100%),
-    #050608;
-  padding-top: 100px !important;
-  padding-bottom: 100px !important;
-  box-shadow:
-    inset 0 30px 60px rgba(0, 0, 0, 0.55),
-    inset 0 -30px 60px rgba(0, 0, 0, 0.55);
+  background: transparent;
+  padding-top: 110px !important;
+  padding-bottom: 110px !important;
   overflow: hidden;
+  box-shadow: none;
 }
-/* Subtle interior texture — only inside the CTA */
+/* Soft spotlight behind the content — gives prominence without framing */
 .cta-final::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 184, 0, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 184, 0, 0.04) 1px, transparent 1px),
-    repeating-linear-gradient(0deg,
-      rgba(255, 255, 255, 0) 0px, rgba(255, 255, 255, 0) 3px,
-      rgba(255, 255, 255, 0.012) 3px, rgba(255, 255, 255, 0.012) 4px);
-  background-size: 50px 50px, 50px 50px, 100% 100%;
+  background:
+    radial-gradient(ellipse 55% 70% at 50% 50%,
+                    rgba(255, 184, 0, 0.10) 0%,
+                    rgba(255, 184, 0, 0.03) 50%,
+                    transparent 75%);
   pointer-events: none;
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 35%, transparent 100%);
+  z-index: 0;
 }
-/* Corner brackets — keep them visible but DROP the glow. Subtle, clean. */
-.cta-final .corner {
-  border-color: rgba(255, 184, 0, 0.55);
-  box-shadow: none;
-}
+/* All CTA children sit above the spotlight */
+.cta-final > * { position: relative; z-index: 1; }
+
+/* Hide the corner brackets — the "framing" Billy doesn't want */
+.cta-final .corner { display: none; }
+
+/* The download button keeps its strong yellow glow */
 .cta-final .btn-download-final {
   box-shadow:
     0 8px 30px rgba(255, 184, 0, 0.28),
