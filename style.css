@@ -70,29 +70,23 @@ body::before {
   mix-blend-mode: screen;
 }
 
-/* Abstract grey atmosphere — a fixed gradient mesh that reads on every
-   section as you scroll. Sits at z-index 0: above the flat base colour,
-   below the grain (z1), scanlines (z2) and content (z3), so it shows
-   through the transparent sections without disturbing the brand glows. */
+/* Technical grid — a fixed blueprint grid (fine lines + intersection dots +
+   small crosshairs) over the dark background. Sits at z-index 0: behind the
+   grain (z1), scanlines (z2) and content (z3), so it reads on the grey
+   sections only. The hero (the yellow part) carries an opaque base of its
+   own, so this never bleeds into it. No glow, no fills, no squares. */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    /* faint swirl for abstract movement */
-    conic-gradient(from 210deg at 76% 38%,
-      rgba(190,198,206,0.030) 0deg, transparent 90deg,
-      rgba(150,160,170,0.022) 200deg, transparent 320deg),
-    /* soft grey blobs — the mesh */
-    radial-gradient(38% 46% at 12% 16%, rgba(156,166,176,0.12) 0%, transparent 60%),
-    radial-gradient(44% 52% at 88% 30%, rgba(120,134,148,0.10) 0%, transparent 62%),
-    radial-gradient(52% 56% at 70% 86%, rgba(140,150,162,0.095) 0%, transparent 65%),
-    radial-gradient(34% 42% at 30% 72%, rgba(108,120,132,0.085) 0%, transparent 60%),
-    /* slow diagonal grey streak */
-    linear-gradient(124deg, transparent 0%,
-      rgba(162,170,180,0.04) 32%, transparent 46%);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'><path d='M0 0H44M0 0V44' fill='none' stroke='rgba(150,160,170,0.06)' stroke-width='1'/><circle cx='0' cy='0' r='1' fill='rgba(196,205,214,0.20)'/><path d='M22 18.5V25.5M18.5 22H25.5' fill='none' stroke='rgba(184,193,202,0.10)' stroke-width='1'/></svg>"),
+    linear-gradient(rgba(150,160,170,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150,160,170,0.05) 1px, transparent 1px);
+  background-size: 44px 44px, 176px 176px, 176px 176px;
+  background-position: 0 0, 0 0, 0 0;
 }
 .page-scanlines {
   position: fixed;
@@ -295,6 +289,7 @@ body::after {
    ============================================================================ */
 .hero {
   position: relative;
+  background: var(--bg);
   padding: 90px 60px 90px;
   overflow: hidden;
   display: grid;
