@@ -86,8 +86,6 @@ body::after {
     linear-gradient(rgba(150,160,170,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(150,160,170,0.05) 1px, transparent 1px);
   background-size: 64px 64px, 256px 256px, 256px 256px;
-  /* Parallax — drift the grid slower than the content using the shared
-     --scroll-y variable already maintained in app.js (no extra listener). */
   background-position:
     0px calc(var(--scroll-y, 0px) * -0.35),
     0px calc(var(--scroll-y, 0px) * -0.35),
@@ -164,11 +162,7 @@ body::after {
 }
 .marquee-track span { padding: 0 22px; }
 .marquee-track span:nth-child(odd) { color: var(--hazard); }
-.marquee-track span:nth-child(2),
-.marquee-track span:nth-child(4),
-.marquee-track span:nth-child(6),
-.marquee-track span:nth-child(8),
-.marquee-track span:nth-child(10) { color: var(--dim-2); }
+.marquee-track span:nth-child(even) { color: var(--dim-2); }
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -1301,19 +1295,27 @@ body::after {
 }
 .fn-visual-block .fn-vis-label { color: var(--danger); }
 
-.fn-vis-glitch {
-  position: absolute;
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--hazard);
-  text-shadow: 0 0 12px var(--hazard);
-  animation: glitch-jitter 0.3s steps(2) infinite;
+.fn-vis-scramble {
+  position: relative;
+  width: 74%;
+  height: 66%;
 }
-.fn-vis-glitch:nth-child(1) { top: 18%; left: 18%; animation-delay: 0s; }
-.fn-vis-glitch:nth-child(2) { top: 22%; right: 22%; animation-delay: 0.1s; color: var(--danger); }
-.fn-vis-glitch:nth-child(3) { bottom: 38%; left: 30%; animation-delay: 0.2s; color: var(--ice); }
-.fn-vis-glitch:nth-child(4) { bottom: 36%; right: 24%; animation-delay: 0.3s; }
+.fn-vis-scramble span {
+  position: absolute;
+  display: block;
+  border-radius: 2px;
+  background: var(--hazard);
+  box-shadow: 0 0 6px rgba(255, 184, 0, 0.5);
+  animation: glitch-jitter 0.32s steps(2) infinite;
+}
+.fn-vis-scramble span:nth-child(1) { left: 4%;  top: 12%; width: 28px; height: 10px; animation-delay: 0s; }
+.fn-vis-scramble span:nth-child(2) { left: 50%; top: 4%;  width: 14px; height: 14px; background: var(--danger); box-shadow: 0 0 6px rgba(255,90,90,0.5); animation-delay: 0.06s; }
+.fn-vis-scramble span:nth-child(3) { right: 2%; top: 18%; width: 20px; height: 8px;  background: var(--ice); box-shadow: 0 0 6px rgba(127,191,255,0.5); animation-delay: 0.12s; }
+.fn-vis-scramble span:nth-child(4) { left: 16%; top: 44%; width: 16px; height: 16px; animation-delay: 0.18s; }
+.fn-vis-scramble span:nth-child(5) { left: 44%; top: 40%; width: 30px; height: 9px;  background: var(--danger); box-shadow: 0 0 6px rgba(255,90,90,0.5); animation-delay: 0.24s; }
+.fn-vis-scramble span:nth-child(6) { right: 6%; top: 46%; width: 12px; height: 12px; background: var(--ice); box-shadow: 0 0 6px rgba(127,191,255,0.5); animation-delay: 0.30s; }
+.fn-vis-scramble span:nth-child(7) { left: 8%;  bottom: 4%; width: 24px; height: 10px; animation-delay: 0.10s; }
+.fn-vis-scramble span:nth-child(8) { left: 52%; bottom: 2%; width: 14px; height: 14px; animation-delay: 0.22s; }
 @keyframes glitch-jitter {
   0%   { transform: translate(0, 0); }
   25%  { transform: translate(-2px, 2px); }
@@ -2963,7 +2965,6 @@ body::after {
   border-color: var(--hazard);
 }
 
-
 /* =====================================================================
  * THANK-YOU PAGE
  * ===================================================================== */
@@ -3025,7 +3026,6 @@ body::after {
   transition: color 0.18s ease;
 }
 .thanks-secondary:hover { color: #ffb800; }
-
 
 
 /* =====================================================================
@@ -3534,3 +3534,188 @@ body {
     0 0 0 1px var(--hazard),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
+
+
+
+/* ============================================================================
+   v5 — VISUAL POLISH. Gradients, depth and refined accents, layered over the
+   existing rules (appended last) so nothing above is rewritten. On-brand:
+   metallic bone titles, glowing hazard gradients, richer card surfaces.
+   ============================================================================ */
+
+/* Metallic sheen on the main (bone) section titles */
+.section-title:not(.accent) {
+  background: linear-gradient(177deg, #fffdf4 0%, var(--bone) 46%, #b6b4a4 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+/* Glowing hazard gradient on the accent titles */
+.section-title.accent {
+  background: linear-gradient(100deg, #ffd463 0%, var(--hazard) 50%, #c98a00 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 18px rgba(255, 184, 0, 0.30));
+}
+/* Section number markers get the gradient treatment too */
+.section-num {
+  background: linear-gradient(90deg, var(--hazard), var(--hazard-2));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+
+/* Primary buttons — hazard gradient fill + refined glow */
+.nav-cta {
+  background: linear-gradient(135deg, var(--hazard-2) 0%, var(--hazard) 55%, #e09f00 100%) !important;
+}
+.btn-download, .btn-download-final, .btn-download-main {
+  background: linear-gradient(135deg, var(--hazard-2) 0%, var(--hazard) 52%, #dd9a00 100%);
+}
+.btn-download-final, .btn-download-main {
+  box-shadow:
+    0 10px 30px rgba(255, 184, 0, 0.28),
+    0 0 0 1px rgba(255, 184, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-download-final:hover, .btn-download-main:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 14px 42px rgba(255, 184, 0, 0.42),
+    0 0 0 1px var(--hazard),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Richer, deeper card surfaces (no transform — JS drives the 3D tilt) */
+.tool-card, .faq-item {
+  background: linear-gradient(170deg, rgba(22,24,20,0.72) 0%, rgba(12,14,12,0.72) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 18px 40px -24px rgba(0,0,0,0.7);
+}
+.tool-card:hover, .faq-item:hover {
+  border-color: rgba(255,184,0,0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 22px 50px -22px rgba(0,0,0,0.8),
+    0 0 24px -6px rgba(255,184,0,0.22);
+}
+.usecase { transition: box-shadow 0.22s ease, border-color 0.22s ease; }
+.usecase:hover {
+  box-shadow: 0 18px 44px -22px rgba(0,0,0,0.8), 0 0 22px -8px rgba(255,184,0,0.20);
+}
+.design-card {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 40px -26px rgba(0,0,0,0.75);
+}
+
+/* Themes-gallery link → unmistakable pill button */
+.designs-cta a {
+  display: inline-block;
+  padding: 3px 12px;
+  margin: 0 2px;
+  background: linear-gradient(135deg, rgba(255,184,0,0.22), rgba(255,184,0,0.08));
+  border: 1px solid rgba(255,184,0,0.55);
+  border-radius: 5px;
+  color: var(--hazard-2);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+.designs-cta a:hover {
+  background: linear-gradient(135deg, rgba(255,184,0,0.36), rgba(255,184,0,0.15));
+  box-shadow: 0 0 18px rgba(255,184,0,0.35);
+  transform: translateY(-1px);
+}
+
+/* Custom scrollbar — thin, dark track, hazard gradient thumb */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,184,0,0.45) rgba(255,255,255,0.04); }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--hazard-2), var(--hazard));
+  border: 2px solid transparent; background-clip: padding-box; border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffe08a, var(--hazard-2)); background-clip: padding-box;
+}
+
+/* ----- Fix + polish the filter.py / Compile script tabs ----- */
+.script-tabs {
+  align-items: stretch;
+}
+.script-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  line-height: 1;
+}
+/* no dangling divider after the last tab */
+.script-tab:last-child { border-right: none; }
+/* clear, clickable hover state for the inactive tab */
+.script-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bone);
+}
+/* active tab connects cleanly to the code panel below + crisp accent bar */
+.script-tab.active {
+  background: #0a0c08;
+  margin-bottom: -1px;
+  padding-bottom: 11px;
+}
+.script-tab.active::before {
+  height: 2px;
+  background: linear-gradient(90deg, var(--hazard), var(--hazard-2));
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.45);
+}
+
+
+/* ----- Quick-start steps (// 09) ----- */
+.qs-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+@media (max-width: 980px) { .qs-steps { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .qs-steps { grid-template-columns: 1fr; } }
+.qs-step {
+  position: relative;
+  padding: 26px 22px 22px;
+  background: linear-gradient(170deg, rgba(22,24,20,0.70), rgba(12,14,12,0.70));
+  border: 1px solid var(--rule);
+  border-top: 2px solid rgba(255,184,0,0.5);
+  border-radius: 6px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.qs-step:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,184,0,0.4);
+  box-shadow: 0 18px 40px -24px rgba(0,0,0,0.78), 0 0 22px -8px rgba(255,184,0,0.22);
+}
+.qs-num {
+  font-family: var(--font-display);
+  font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--hazard-2), var(--hazard));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.qs-step h3 {
+  font-family: var(--font-display); font-size: 16px; letter-spacing: 0.02em;
+  text-transform: uppercase; color: var(--bone); margin-bottom: 8px;
+}
+.qs-step p { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; color: var(--dim); }
+.qs-step strong { color: var(--bone-2); font-weight: 600; }
+
+/* ----- System-requirements grid (// 10) ----- */
+.specs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 980px) { .specs-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .specs-grid { grid-template-columns: 1fr; } }
+.spec-card {
+  padding: 18px 18px 16px;
+  background: rgba(15,17,16,0.55);
+  border: 1px solid var(--rule);
+  border-left: 2px solid rgba(255,184,0,0.45);
+  border-radius: 5px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.spec-card:hover { border-color: rgba(255,184,0,0.35); box-shadow: 0 14px 34px -24px rgba(0,0,0,0.72); }
+.spec-k {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--hazard); margin-bottom: 6px;
+}
+.spec-v { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--bone); line-height: 1.15; }
+.spec-note { font-family: var(--font-mono); font-size: 11px; color: var(--dim-2); margin-top: 5px; }
