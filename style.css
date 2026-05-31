@@ -82,11 +82,16 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'><path d='M0 0H44M0 0V44' fill='none' stroke='rgba(150,160,170,0.06)' stroke-width='1'/><circle cx='0' cy='0' r='1' fill='rgba(196,205,214,0.20)'/><path d='M22 18.5V25.5M18.5 22H25.5' fill='none' stroke='rgba(184,193,202,0.10)' stroke-width='1'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><path d='M0 0H64M0 0V64' fill='none' stroke='rgba(150,160,170,0.06)' stroke-width='1'/><circle cx='0' cy='0' r='1.1' fill='rgba(196,205,214,0.20)'/><path d='M32 27V37M27 32H37' fill='none' stroke='rgba(184,193,202,0.10)' stroke-width='1'/></svg>"),
     linear-gradient(rgba(150,160,170,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(150,160,170,0.05) 1px, transparent 1px);
-  background-size: 44px 44px, 176px 176px, 176px 176px;
-  background-position: 0 0, 0 0, 0 0;
+  background-size: 64px 64px, 256px 256px, 256px 256px;
+  /* Parallax — drift the grid slower than the content using the shared
+     --scroll-y variable already maintained in app.js (no extra listener). */
+  background-position:
+    0px calc(var(--scroll-y, 0px) * -0.35),
+    0px calc(var(--scroll-y, 0px) * -0.35),
+    0px calc(var(--scroll-y, 0px) * -0.35);
 }
 .page-scanlines {
   position: fixed;
