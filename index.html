@@ -485,10 +485,82 @@
 
 <div class="hazard-strip"></div>
 
+<!-- ============== LIVE DEMO ============== -->
+<section class="section section-demo" id="demo">
+  <div class="section-head reveal">
+    <span class="section-num">// 03</span>
+    <h2 class="section-title">See it <em>throttle</em>, live.</h2>
+    <p class="section-sub">The real idea, running in your browser. Pick a direction, flip a function, tune its number &mdash; and watch what Throttlr does to the packets. No download needed to play.</p>
+  </div>
+
+    <div class="demo-wrap reveal">
+    <div class="demo-stage">
+      <span class="demo-corner tl"></span><span class="demo-corner tr"></span><span class="demo-corner bl"></span><span class="demo-corner br"></span>
+      <div class="demo-stage-head">
+        <span class="dsh-tag">// LIVE SIMULATION</span>
+        <span class="dsh-live"><i></i> RUNNING</span>
+      </div>
+      <div class="demo-canvas-wrap">
+        <canvas id="demoCanvas"></canvas>
+        <span class="demo-ep demo-ep-l">APP</span>
+        <span class="demo-ep demo-ep-r">NET</span>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head">
+        <span class="dph-title">Functions</span>
+        <span class="dph-dir">
+          <button class="dir-chip on" type="button" id="demo-out" aria-pressed="true">OUT</button>
+          <button class="dir-chip on" type="button" id="demo-in" aria-pressed="true">IN</button>
+        </span>
+      </div>
+
+      <div class="demo-fns" id="demoFns">
+        <div class="demo-fn" data-fn="lag">
+          <button class="df-sw" type="button" aria-pressed="false" aria-label="Toggle Lag"></button>
+          <span class="df-name">Lag</span>
+          <span class="df-field"><input type="number" class="df-input" data-param="lag" value="500" min="0" max="2000" step="50" aria-label="Lag delay"><span class="df-unit">ms</span></span>
+        </div>
+        <div class="demo-fn" data-fn="drop">
+          <button class="df-sw" type="button" aria-pressed="false" aria-label="Toggle Drop"></button>
+          <span class="df-name">Drop</span>
+          <span class="df-field"><input type="number" class="df-input" data-param="drop" value="40" min="0" max="100" step="5" aria-label="Drop percent"><span class="df-unit">%</span></span>
+        </div>
+        <div class="demo-fn" data-fn="throttle">
+          <button class="df-sw" type="button" aria-pressed="false" aria-label="Toggle Throttle"></button>
+          <span class="df-name">Throttle</span>
+          <span class="df-field"><input type="number" class="df-input" data-param="throttle" value="35" min="5" max="100" step="5" aria-label="Throttle percent"><span class="df-unit">% line</span></span>
+        </div>
+        <div class="demo-fn" data-fn="block">
+          <button class="df-sw" type="button" aria-pressed="false" aria-label="Toggle Block"></button>
+          <span class="df-name">Block</span>
+          <span class="df-field df-field-off"><span class="df-unit">total stop</span></span>
+        </div>
+        <div class="demo-fn" data-fn="fun">
+          <button class="df-sw" type="button" aria-pressed="false" aria-label="Toggle Fun"></button>
+          <span class="df-name">Fun</span>
+          <span class="df-field"><input type="number" class="df-input" data-param="fun" value="60" min="0" max="100" step="5" aria-label="Scramble percent"><span class="df-unit">% chaos</span></span>
+        </div>
+      </div>
+
+      <div class="demo-statusbar">
+        <div class="dsb-stat"><span class="dsb-k">SENT</span><b id="demo-sent">0</b></div>
+        <div class="dsb-stat is-drop"><span class="dsb-k">DROP</span><b id="demo-dropped">0</b></div>
+        <div class="dsb-stat is-delay"><span class="dsb-k">DELAY</span><b id="demo-delayed">0</b></div>
+        <div class="dsb-stat is-rate"><span class="dsb-k">THRU</span><b id="demo-rate">100%</b></div>
+        <button class="dsb-reset" type="button" id="demo-reset">&#9632; RESET</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-strip"></div>
+
 <!-- ============== TOOLS ============== -->
 <section class="section section-tools" id="tools">
   <div class="section-head reveal">
-    <span class="section-num">// 03</span>
+    <span class="section-num">// 04</span>
     <h2 class="section-title">Advanced tools, in a side rail.</h2>
     <p class="section-sub">When the toggles aren't enough. Inspect, capture, geo-block, script.</p>
   </div>
@@ -571,7 +643,7 @@
 <!-- ============== POWER FEATURES ============== -->
 <section class="section section-power" id="power">
   <div class="section-head reveal">
-    <span class="section-num">// 04</span>
+    <span class="section-num">// 05</span>
     <h2 class="section-title">Built for serious testing.</h2>
     <p class="section-sub">Throttlr is more than a few toggles. The features below are what turn it from a hobby utility into something you can rely on across long sessions, multiple machines, and complex scenarios.</p>
   </div>
@@ -639,7 +711,7 @@
 <!-- ============== HOW IT WORKS ============== -->
 <section class="section section-how" id="how">
   <div class="section-head reveal">
-    <span class="section-num">// 05</span>
+    <span class="section-num">// 06</span>
     <h2 class="section-title">How it works.</h2>
     <p class="section-sub">Two kernel-level handles. One picks up connection events the moment they're made; the other captures, modifies, or drops packets in real time.</p>
   </div>
@@ -727,7 +799,7 @@
 <!-- ============== FILTER SCRIPT EXAMPLE ============== -->
 <section class="section section-script">
   <div class="section-head reveal">
-    <span class="section-num">// 06</span>
+    <span class="section-num">// 07</span>
     <h2 class="section-title">Write your own filters.</h2>
     <p class="section-sub">Python-style expressions, sandboxed via AST whitelist. No imports, no exec, no system access. Just packet attributes and a few helpers.</p>
   </div>
@@ -829,7 +901,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== DESIGNS ============== -->
 <section class="section section-designs">
   <div class="section-head reveal">
-    <span class="section-num">// 07</span>
+    <span class="section-num">// 08</span>
     <h2 class="section-title">Pick your aesthetic.</h2>
     <p class="section-sub">Four base designs ship with Throttlr. Custom themes are a separate gallery — drop a theme file into the themes folder, restart, done. Switch any time from Settings → Appearance, no restart.</p>
   </div>
@@ -869,7 +941,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== CHANGELOG ============== -->
 <section class="section section-changelog" id="whatsnew">
   <div class="section-head reveal">
-    <span class="section-num">// 08</span>
+    <span class="section-num">// 09</span>
     <h2 class="section-title">What's new in <span data-auto-version>the latest release</span>.</h2>
     <p class="section-sub">Per-app speed test, real internet wizard, custom themes, system tray, hotkey reliability fixes, and more. <a href="https://github.com/BillysMatrix18/throttlr-releases/releases" target="_blank" rel="noopener">Full changelog on GitHub →</a></p>
   </div>
@@ -917,7 +989,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== QUICK START ============== -->
 <section class="section section-quickstart" id="quickstart">
   <div class="section-head reveal">
-    <span class="section-num">// 09</span>
+    <span class="section-num">// 10</span>
     <h2 class="section-title">Up and running in <em>under a minute</em>.</h2>
     <p class="section-sub">No config files, no accounts, no setup wizard. Install it, point it at an app, flip a switch — that's the whole flow.</p>
   </div>
@@ -934,7 +1006,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== SYSTEM REQUIREMENTS ============== -->
 <section class="section section-specs" id="specs">
   <div class="section-head reveal">
-    <span class="section-num">// 10</span>
+    <span class="section-num">// 11</span>
     <h2 class="section-title">What you need.</h2>
     <p class="section-sub">Lightweight and self-contained — nothing extra to install, and it runs happily offline once it's on your machine.</p>
   </div>
@@ -955,7 +1027,7 @@ pkt.proto == <span class="str">"UDP"</span> <span class="kw">and</span> pkt.dst_
 <!-- ============== FAQ ============== -->
 <section class="section section-faq" id="faq">
   <div class="section-head reveal">
-    <span class="section-num">// 11</span>
+    <span class="section-num">// 12</span>
     <h2 class="section-title">Frequently asked.</h2>
   </div>
   <div class="faq-list">

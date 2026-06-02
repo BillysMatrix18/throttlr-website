@@ -3719,3 +3719,108 @@ body {
 }
 .spec-v { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--bone); line-height: 1.15; }
 .spec-note { font-family: var(--font-mono); font-size: 11px; color: var(--dim-2); margin-top: 5px; }
+
+/* =====================================================================
+ * v6 — broadened 3D tilt, redesigned LIVE DEMO (// 03), download hover
+ * ===================================================================== */
+
+/* compiled-rule staggered reveal (// 07) */
+.sc-rule { opacity: 0; transform: translateY(6px); transition: opacity 0.35s ease, transform 0.35s ease; }
+.script-window.is-compiled .sc-rule.sc-show { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .script-window.is-compiled .sc-rule { opacity: 1; transform: none; } }
+
+/* --- broadened 3D tilt (rotation for all; glow on simple content cards) --- */
+.fn-row, .script-window, .demo-stage, .qs-step, .cl-col, .spec-card {
+  position: relative; will-change: transform;
+  transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.fn-row.is-tilting, .script-window.is-tilting, .demo-stage.is-tilting,
+.qs-step.is-tilting, .cl-col.is-tilting, .spec-card.is-tilting {
+  transition: transform 0.06s linear, border-color 0.3s ease, box-shadow 0.3s ease; z-index: 5;
+}
+.fn-row:hover, .script-window:hover, .demo-stage:hover,
+.qs-step:hover, .cl-col:hover, .spec-card:hover { border-color: rgba(255,184,0,0.42); }
+.fn-row::after, .qs-step::after, .cl-col::after, .spec-card::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 1; opacity: 0;
+  background: radial-gradient(340px circle at var(--mx,50%) var(--my,50%), rgba(255,184,0,0.12), transparent 40%);
+  transition: opacity 0.25s ease;
+}
+.fn-row.is-tilting::after, .qs-step.is-tilting::after, .cl-col.is-tilting::after, .spec-card.is-tilting::after { opacity: 1; }
+.fn-row > *, .qs-step > *, .cl-col > *, .spec-card > * { position: relative; z-index: 2; }
+
+/* --- download button: no cursor-follow; clearer lift + the built-in sweep --- */
+.btn-download-final:hover { transform: translateY(-4px) scale(1.015); }
+.btn-download-final:active { transform: translateY(-1px) scale(1); }
+
+/* =====================================================================
+ * LIVE DEMO (// 03) — industrial control-panel restyle
+ * ===================================================================== */
+.demo-wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: stretch; }
+@media (max-width: 920px) { .demo-wrap { grid-template-columns: 1fr; } }
+
+.demo-corner { position: absolute; width: 13px; height: 13px; border: 2px solid var(--hazard); z-index: 4; pointer-events: none; opacity: 0.6; }
+.demo-corner.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+.demo-corner.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+.demo-corner.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+.demo-corner.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+
+.demo-stage { border: 1px solid var(--line); border-radius: 6px; background: linear-gradient(160deg, #0b0e0e, #080a0a); overflow: hidden; display: flex; flex-direction: column; }
+.demo-stage-head { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: rgba(255,184,0,0.03); }
+.dsh-tag { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: var(--hazard); }
+.dsh-live { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--mint); display: flex; align-items: center; gap: 7px; }
+.dsh-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); animation: demo-blink 1.6s infinite; }
+@keyframes demo-blink { 50% { opacity: 0.35; } }
+.demo-canvas-wrap { position: relative; flex: 1; min-height: 340px; }
+#demoCanvas { width: 100%; height: 100%; display: block; min-height: 340px; }
+.demo-ep { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--dim-2); pointer-events: none; }
+.demo-ep-l { left: 16px; } .demo-ep-r { right: 16px; }
+
+.demo-panel { position: relative; border: 1px solid var(--line); border-radius: 6px; background: linear-gradient(160deg, #0b0e0e, #080a0a); padding: 20px 20px 18px; display: flex; flex-direction: column; }
+.demo-panel-head { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.dph-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--bone); }
+.dph-dir { margin-left: auto; display: flex; gap: 6px; }
+.dir-chip { -webkit-appearance: none; appearance: none; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--dim); background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; cursor: pointer; transition: all 0.15s ease; }
+.dir-chip:hover { border-color: var(--line-2); color: var(--bone); }
+.dir-chip.on { color: #07090a; background: var(--hazard); border-color: var(--hazard); box-shadow: 0 0 12px rgba(255,184,0,0.3); }
+
+.demo-fns { display: flex; flex-direction: column; }
+.demo-fn { display: flex; align-items: center; gap: 14px; padding: 11px 2px; border-bottom: 1px solid var(--rule); }
+.demo-fn:last-child { border-bottom: none; }
+.df-sw { -webkit-appearance: none; appearance: none; flex: none; width: 58px; height: 26px; border: 1px solid var(--line-2); border-radius: 4px; background: rgba(0,0,0,0.4); color: var(--dim-2); font: 700 10px/1 var(--font-mono); letter-spacing: 0.14em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease; }
+.df-sw::after { content: 'OFF'; }
+.df-sw:hover { border-color: var(--hazard); }
+.demo-fn.on .df-sw { background: var(--hazard); border-color: var(--hazard); color: #07090a; box-shadow: 0 0 12px rgba(255,184,0,0.3); }
+.demo-fn.on .df-sw::after { content: 'ON'; }
+.demo-fn[data-fn="drop"].on .df-sw, .demo-fn[data-fn="block"].on .df-sw { background: var(--danger); border-color: var(--danger); color: #07090a; box-shadow: 0 0 12px rgba(255,68,102,0.3); }
+.df-name { font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--bone); }
+.df-field { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.df-input { width: 62px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--hazard); background: rgba(0,0,0,0.45); border: 1px solid var(--line); border-radius: 4px; padding: 6px; text-align: center; -moz-appearance: textfield; }
+.df-input::-webkit-outer-spin-button, .df-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.df-input:focus { outline: none; border-color: var(--hazard); box-shadow: 0 0 0 3px rgba(255,184,0,0.15); }
+.df-unit { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim-2); min-width: 46px; }
+.df-field-off { opacity: 0.5; }
+
+.demo-statusbar { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.dsb-stat { display: flex; flex-direction: column; gap: 4px; }
+.dsb-k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--dim-2); }
+.dsb-stat b { font-family: var(--font-mono); font-size: 20px; font-weight: 700; line-height: 1; color: var(--bone); }
+.dsb-stat.is-drop b { color: var(--danger); }
+.dsb-stat.is-delay b { color: var(--hazard); }
+.dsb-stat.is-rate b { color: var(--mint); }
+.dsb-reset { margin-left: auto; -webkit-appearance: none; appearance: none; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--dim); background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 4px; padding: 9px 14px; cursor: pointer; transition: all 0.16s ease; }
+.dsb-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+/* =====================================================================
+ * v7 — remove cursor-follow glow on cards; smoother, gentler tilt
+ * ===================================================================== */
+
+/* kill the radial "light that follows the mouse" on every tilted card */
+.usecase::after, .tool-card::after, .power-card::after, .design-card::after, .faq-item::after,
+.fn-row::after, .qs-step::after, .cl-col::after, .spec-card::after { display: none; }
+
+/* ease the tilt follow instead of the snappy 0.06s linear (smoother) */
+.usecase.is-tilting, .tool-card.is-tilting, .power-card.is-tilting, .design-card.is-tilting, .faq-item.is-tilting,
+.fn-row.is-tilting, .script-window.is-tilting, .demo-stage.is-tilting,
+.qs-step.is-tilting, .cl-col.is-tilting, .spec-card.is-tilting {
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}

@@ -140,7 +140,7 @@
   // get a subtle rotateX/rotateY that tracks the cursor, plus a radial
   // glow on the surface (CSS variables --mx/--my drive a ::after gradient).
   // Touch devices skip this entirely — rotation interferes with scrolling.
-  const tiltSelector = '.usecase, .tool-card, .power-card, .design-card, .faq-item';
+  const tiltSelector = '.usecase, .tool-card, .power-card, .design-card, .faq-item, .fn-row, .script-window, .demo-stage, .qs-step, .cl-col, .spec-card';
   if (isDesktopPointer) {
     document.querySelectorAll(tiltSelector).forEach(function (card) {
       let rect = null;
@@ -153,10 +153,10 @@
         const px = (mx - rect.left) / rect.width;
         const py = (my - rect.top) / rect.height;
         // Rotation amount — gentle (max ~6deg)
-        const rotY = (px - 0.5) * 8;      // left/right
-        const rotX = (0.5 - py) * 6;      // up/down
+        const rotY = (px - 0.5) * 4;      // left/right (gentler)
+        const rotX = (0.5 - py) * 3;      // up/down (gentler)
         card.style.transform =
-          'perspective(900px) rotateX(' + rotX.toFixed(2) + 'deg) ' +
+          'perspective(1200px) rotateX(' + rotX.toFixed(2) + 'deg) ' +
           'rotateY(' + rotY.toFixed(2) + 'deg)';
         // Glow position — % within card for the ::after radial-gradient
         card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
@@ -188,7 +188,7 @@
   // effect: the button translates ~12px toward the cursor when the mouse is
   // within a small radius. Springs back when the cursor leaves.
   if (isDesktopPointer) {
-    const magnetSelector = '.nav-cta, .btn-download, .btn-secondary';
+    const magnetSelector = '.__no-magnet__';  // magnetic cursor-follow disabled
     document.querySelectorAll(magnetSelector).forEach(function (btn) {
       let rect = null;
       let rafM = false;
@@ -333,6 +333,16 @@
   const scriptTabs = document.querySelectorAll('.script-tab[data-script-tab]');
   const scriptWindow = document.getElementById('scriptWindow');
   const scriptStatus = document.getElementById('scriptStatusText');
+  const scriptCompiled = document.getElementById('scriptCompiled');
+  const scRules = scriptCompiled ? scriptCompiled.querySelectorAll('.sc-rule') : [];
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function staggerRules() {
+    scRules.forEach(function (r, i) {
+      r.classList.remove('sc-show');
+      if (prefersReduced) { r.classList.add('sc-show'); return; }
+      setTimeout(function () { r.classList.add('sc-show'); }, 70 + i * 110);
+    });
+  }
   const STATUS_SOURCE = 'Compiled · 0 errors · 4 rules ready · 12 AST nodes';
   const STATUS_COMPILED = 'Showing compiled AST · 4 rules · all valid · sandbox checks ✓';
   scriptTabs.forEach(function (tab) {
@@ -343,13 +353,15 @@
       tab.classList.add('active');
       if (target === 'compiled') {
         // Show the "compiling" overlay briefly, then swap to compiled view
+        scriptWindow.classList.remove('is-compiled');
         scriptWindow.classList.add('is-compiling');
         if (scriptStatus) scriptStatus.textContent = 'Compiling…';
         setTimeout(function () {
           scriptWindow.classList.remove('is-compiling');
           scriptWindow.classList.add('is-compiled');
           if (scriptStatus) scriptStatus.textContent = STATUS_COMPILED;
-        }, 900);
+          staggerRules();
+        }, prefersReduced ? 0 : 700);
       } else {
         scriptWindow.classList.remove('is-compiled');
         scriptWindow.classList.remove('is-compiling');
@@ -527,3 +539,159 @@
     if (impTag) impTag.style.display = buckets.improved.length ? '' : 'none';
     if (impList && !buckets.improved.length) impList.style.display = 'none';
   }
+
+
+// ============================================================================
+// LIVE DEMO (// 03) — clean, simple per-app throttle simulator.
+// Bidirectional packet "chips" flow APP <-> NET; flip functions + tune numbers
+// and watch delivered / dropped / delayed / throughput respond in real time.
+// Self-contained IIFE, vanilla, reduced-motion aware.
+// ============================================================================
+(function () {
+  'use strict';
+  function ready(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+  ready(initDemo);
+
+  function initDemo() {
+    var c = document.getElementById('demoCanvas'); if (!c) return;
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+    var ctx, W, H;
+    function fit() { var dpr = Math.min(window.devicePixelRatio || 1, 2), r = c.getBoundingClientRect(); c.width = Math.max(1, (r.width * dpr) | 0); c.height = Math.max(1, (r.height * dpr) | 0); ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); W = r.width; H = r.height; }
+    fit();
+    var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(fit, 150); });
+
+    var PROTOS = [
+      { l: 'TCP', c: '102,221,255' }, { l: 'UDP', c: '102,229,184' }, { l: '443', c: '255,184,0' },
+      { l: 'TLS', c: '102,221,255' }, { l: 'DNS', c: '102,229,184' }, { l: 'ACK', c: '255,184,0' }, { l: 'GET', c: '102,221,255' }
+    ];
+    function proto() { return PROTOS[(Math.random() * PROTOS.length) | 0]; }
+
+    var state = { lag: false, drop: false, throttle: false, block: false, fun: false, out: true, in: true };
+    var params = { lag: 500, drop: 40, throttle: 35, fun: 60 };
+    var packets = [], stats = { delivered: 0, dropped: 0, delayed: 0 }, outcomes = [], flip = 0, lastSpawn = 0, lastStat = 0;
+    var font = '700 9px "JetBrains Mono", monospace';
+
+    // wire controls
+    document.querySelectorAll('#demoFns .demo-fn').forEach(function (row) {
+      var fn = row.getAttribute('data-fn'), btn = row.querySelector('.df-sw');
+      if (btn) btn.addEventListener('click', function () { state[fn] = !state[fn]; row.classList.toggle('on', state[fn]); btn.setAttribute('aria-pressed', state[fn] ? 'true' : 'false'); });
+    });
+    document.querySelectorAll('#demoFns .df-input[data-param]').forEach(function (inp) {
+      var k = inp.getAttribute('data-param');
+      function apply() { var v = parseFloat(inp.value); if (isNaN(v)) return; params[k] = Math.max(parseFloat(inp.min || 0), Math.min(parseFloat(inp.max || 1e9), v)); }
+      inp.addEventListener('input', apply); apply();
+    });
+    var btnOut = document.getElementById('demo-out'), btnIn = document.getElementById('demo-in');
+    function dirBtn(b, k) { if (!b) return; b.addEventListener('click', function () { state[k] = !state[k]; b.classList.toggle('on', state[k]); b.setAttribute('aria-pressed', state[k] ? 'true' : 'false'); }); }
+    dirBtn(btnOut, 'out'); dirBtn(btnIn, 'in');
+    var reset = document.getElementById('demo-reset');
+    if (reset) reset.addEventListener('click', function () { stats = { delivered: 0, dropped: 0, delayed: 0 }; outcomes = []; packets = []; });
+
+    var elSent = document.getElementById('demo-sent'), elDrop = document.getElementById('demo-dropped'), elDelay = document.getElementById('demo-delayed'), elRate = document.getElementById('demo-rate');
+
+    function lx() { return Math.max(64, W * 0.12); }
+    function rx() { return W - Math.max(64, W * 0.12); }
+    function laneOut() { return H * 0.36; }
+    function laneIn() { return H * 0.64; }
+    function speed() { return state.throttle ? Math.max(0.12, params.throttle / 100) : 1; }
+    function interval() { return state.throttle ? Math.min(1300, 240 / Math.max(0.18, params.throttle / 100)) : 240; }
+    function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+    function pushOut(ok) { outcomes.push(ok ? 1 : 0); if (outcomes.length > 50) outcomes.shift(); }
+
+    function spawn() {
+      var dirs = []; if (state.out) dirs.push(1); if (state.in) dirs.push(-1);
+      if (!dirs.length) return;
+      var dir = dirs[flip % dirs.length]; flip++;
+      var pr = proto(), src = dir === 1 ? lx() : rx();
+      var laneY = (dir === 1 ? laneOut() : laneIn()) + (Math.random() * 12 - 6);
+      var p = { dir: dir, src: src, p: 0, x: src, y: laneY, w: 32 + (Math.random() * 12 | 0), h: 16, alpha: 1, hue: pr.c, label: pr.l, state: 'travel', lagged: false, willDrop: false, dropAt: 0, scram: false, vy: 0, frag: [Math.random(), Math.random(), Math.random(), Math.random()] };
+      if (state.drop && Math.random() < params.drop / 100) { p.willDrop = true; p.dropAt = 0.3 + Math.random() * 0.28; }
+      if (state.fun && Math.random() < params.fun / 100) p.scram = true;
+      packets.push(p);
+    }
+
+    function chip(p) {
+      var w = p.w, h = p.h, x = p.x - w / 2, y = p.y - h / 2, a = p.alpha, hue = p.hue;
+      if (p.state === 'held') hue = '255,184,0'; else if (state.throttle) hue = '255,184,0';
+      if (p.state === 'travel' || p.state === 'held') {
+        var sx = p.x - (w * 0.5 + 18) * p.dir;
+        var g = ctx.createLinearGradient(sx, p.y, p.x - (w / 2) * p.dir, p.y);
+        g.addColorStop(0, 'rgba(' + hue + ',0)'); g.addColorStop(1, 'rgba(' + hue + ',' + (0.3 * a) + ')');
+        ctx.strokeStyle = g; ctx.lineWidth = h * 0.45; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(sx, p.y); ctx.lineTo(p.x - (w / 2) * p.dir, p.y); ctx.stroke();
+      }
+      if (p.state === 'dying') { for (var f = 0; f < 4; f++) { var fx = x + (f % 2) * (w / 2), fy = y + ((f / 2) | 0) * (h / 2) + p.frag[f] * 6; ctx.fillStyle = 'rgba(255,68,102,' + a + ')'; rr(fx + p.frag[f] * 3, fy, w / 2 - 2, h / 2 - 2, 2); ctx.fill(); } return; }
+      if (p.scram) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((Math.random() - 0.5) * 0.16); ctx.translate(-p.x, -p.y); }
+      rr(x, y, w, h, 4); ctx.fillStyle = 'rgba(10,12,12,' + (0.94 * a) + ')'; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(' + hue + ',' + (0.85 * a) + ')'; ctx.stroke();
+      rr(x, y, 4, h, 2); ctx.fillStyle = 'rgba(' + hue + ',' + a + ')'; ctx.fill();
+      ctx.fillStyle = 'rgba(' + (p.scram ? '255,122,192' : '232,230,216') + ',' + a + ')';
+      ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      var lbl = p.label; if (p.scram && Math.random() < 0.5) lbl = '!#%&*?'[(Math.random() * 6) | 0] + lbl.slice(1);
+      ctx.fillText(lbl, x + 8, p.y + 0.5);
+      if (p.state === 'held') { ctx.fillStyle = 'rgba(255,184,0,' + a + ')'; ctx.beginPath(); ctx.arc(x + w - 5, y + 5, 2.2, 0, 6.283); ctx.fill(); }
+      if (p.scram) ctx.restore();
+    }
+
+    function node(x, y, col) { ctx.fillStyle = col.replace(/[\d.]+\)$/, '0.1)'); rr(x - 21, y - 21, 42, 42, 10); ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 1.3; rr(x - 21, y - 21, 42, 42, 10); ctx.stroke(); }
+
+    function update(now) {
+      if (now - lastSpawn > interval()) { spawn(); lastSpawn = now; }
+      var L = lx(), R = rx();
+      for (var i = packets.length - 1; i >= 0; i--) {
+        var p = packets[i], dest = p.dir === 1 ? R : L;
+        if (p.state === 'held') { if (now >= p.releaseAt) p.state = 'travel'; }
+        else if (p.state === 'travel') {
+          p.p += 0.0062 * speed() * (1 + Math.random() * 0.1);
+          p.x = p.src + (dest - p.src) * p.p;
+          if (state.lag && !p.lagged && p.p >= 0.42) { p.state = 'held'; p.lagged = true; p.releaseAt = now + params.lag + Math.random() * params.lag * 0.4; stats.delayed++; continue; }
+          if (state.block && p.p >= 0.5) { p.state = 'dying'; stats.dropped++; pushOut(0); continue; }
+          if (p.willDrop && p.p >= p.dropAt) { p.state = 'dying'; stats.dropped++; pushOut(0); continue; }
+          if (p.p >= 1) { stats.delivered++; pushOut(1); packets.splice(i, 1); continue; }
+        } else if (p.state === 'dying') { p.alpha -= 0.05; p.vy += 0.3; p.y += p.vy; if (p.alpha <= 0) packets.splice(i, 1); }
+      }
+      if (packets.length > 80) packets.splice(0, packets.length - 80);
+    }
+
+    function draw() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, W, H);
+      var L = lx(), R = rx(), oY = laneOut(), iY = laneIn(), mid = (L + R) / 2;
+      // faint grid
+      ctx.strokeStyle = 'rgba(255,184,0,0.04)'; ctx.lineWidth = 1;
+      for (var gx = L; gx < R; gx += 46) { ctx.beginPath(); ctx.moveTo(gx, H * 0.12); ctx.lineTo(gx, H * 0.88); ctx.stroke(); }
+      // lane rails + labels
+      ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      if (state.out) { ctx.beginPath(); ctx.moveTo(L, oY); ctx.lineTo(R, oY); ctx.stroke(); }
+      if (state.in) { ctx.beginPath(); ctx.moveTo(L, iY); ctx.lineTo(R, iY); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.font = '700 9px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
+      if (state.out) { ctx.fillStyle = 'rgba(102,229,184,0.5)'; ctx.textAlign = 'left'; ctx.fillText('OUTBOUND \u2192', L, oY - 16); }
+      if (state.in) { ctx.fillStyle = 'rgba(102,221,255,0.5)'; ctx.textAlign = 'right'; ctx.fillText('\u2190 INBOUND', R, iY + 16); }
+      node(L, (oY + iY) / 2, 'rgba(102,221,255,0.5)');
+      node(R, (oY + iY) / 2, state.block ? 'rgba(255,68,102,0.6)' : 'rgba(102,229,184,0.55)');
+      if (state.block) { ctx.fillStyle = 'rgba(255,68,102,0.1)'; ctx.fillRect(mid - 4, H * 0.12, 8, H * 0.76); for (var s = H * 0.12; s < H * 0.88; s += 13) { ctx.strokeStyle = 'rgba(255,68,102,0.55)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(mid - 7, s); ctx.lineTo(mid + 7, s + 9); ctx.stroke(); } }
+      for (var i = 0; i < packets.length; i++) chip(packets[i]);
+    }
+
+    function loop(now) {
+      now = now || 0; update(now); draw();
+      if (now - lastStat > 100) {
+        if (elSent) elSent.textContent = stats.delivered;
+        if (elDrop) elDrop.textContent = stats.dropped;
+        if (elDelay) elDelay.textContent = stats.delayed;
+        if (elRate) {
+          var sum = 0; for (var k = 0; k < outcomes.length; k++) sum += outcomes[k];
+          var pct = outcomes.length ? Math.round((sum / outcomes.length) * 100) : 100;
+          if (state.throttle) pct = Math.round(pct * (params.throttle / 100));
+          elRate.textContent = pct + '%';
+          elRate.style.color = pct >= 75 ? 'var(--mint)' : pct >= 35 ? 'var(--hazard)' : 'var(--danger)';
+        }
+        lastStat = now;
+      }
+      raf(loop);
+    }
+    if (!reduced) raf(loop); else { for (var k = 0; k < 6; k++) spawn(); draw(); }
+  }
+})();

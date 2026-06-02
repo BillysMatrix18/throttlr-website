@@ -49,25 +49,25 @@ The version label on the buttons (showing `v3.1.0`, `v3.1.2`, etc.) is also auto
 .
 ├── index.html       — markup
 ├── style.css        — all styling
-├── app.js           — scroll progress + reveal animations + counters
+├── app.js           — scroll/reveal/counters + tilt/magnetic + clickable architecture, working Compile, and the live demo simulator
 └── README.md        — this file
 ```
 
 ## Sections
 
-1. Top marquee
-2. Sticky nav
-3. Hero with floating app screenshot
-4. Use cases band (Gamers / Devs / Streamers / Network folk)
-5. **Why Throttlr** — explanation
-6. **The six functions** — deep-dive cards with visualizations
-7. **Advanced tools** — 8-card grid
-8. **How it works** — architecture diagram
-9. **Filter Script** — code example with syntax highlighting
-10. **Two designs** — Industrial vs Midnight comparison
-11. **What's new** — changelog
-12. **FAQ**
-13. Final CTA
-14. Footer
+1. Top marquee + sticky nav
+2. Hero with floating app screenshot
+3. Use cases band (Gamers / Devs / Streamers / Network folk)
+4. **// 01 Why Throttlr** — per-process explanation
+5. **// 02 The six functions** — deep-dive cards with visualizations
+6. **// 03 Live demo** — interactive throttle simulator (inbound/outbound + per-function numbers; packets delivered/dropped/delayed live)
+7. **// 04 Advanced tools** — side-rail grid
+8. **// 05 Built for serious testing** — power features
+9. **// 06 How it works** — clickable architecture diagram
+10. **// 07 Write your own filters** — DSL editor with a working **Compile** (staggered AST reveal)
+11. **// 08 Pick your aesthetic** — Industrial vs Midnight
+12. **// 09 What's new** — auto-pulled changelog
+13. **// 10 Quick start** · **// 11 Specs** · **// 12 FAQ**
+14. Final CTA + footer
 
 — Billy's Matrix
